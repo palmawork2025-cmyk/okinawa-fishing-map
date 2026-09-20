@@ -219,18 +219,22 @@
 <script>
 /* ==================== DATA ==================== */
 const AREAS = [
-  { id: 'naha', name: '那覇・南部', lat: 26.2124, lon: 127.6809 },
+  { id: 'naha', name: '那覇周辺', lat: 26.2124, lon: 127.6809 },
+  { id: 'itoman', name: '糸満', lat: 26.1215, lon: 127.6685 },
+  { id: 'nanjo', name: '南城市', lat: 26.1550, lon: 127.7800 },
   { id: 'chubu_w', name: '中部（西海岸）', lat: 26.4970, lon: 127.8360 },
   { id: 'chubu_e', name: '中部（東海岸）', lat: 26.4270, lon: 127.8330 },
   { id: 'north_w', name: '北部（やんばる西）', lat: 26.5918, lon: 127.9770 },
   { id: 'north_e', name: '北部（やんばる東）', lat: 26.7300, lon: 128.2350 },
 ];
 
-// 気象庁「地方海上予報」「警報注意報」の集約データ（jma-data.json）と、
-// アプリの5エリアの対応づけ。warnClass10 = 沖縄気象台の警報区分（本島中南部/本島北部）、
+// 気象庁「地方海上予報」「警報注意報」の集約データと、アプリのエリアの対応づけ。
+// warnClass10 = 沖縄気象台の警報区分（本島中南部/本島北部）、
 // marineArea = 地方海上予報の海域コード（東シナ海南部=6010 / 沖縄東方海上=6020）。
 const JMA_AREA_META = {
   naha: { warnClass10: '471010', marineArea: '6010' },
+  itoman: { warnClass10: '471010', marineArea: '6010' },
+  nanjo: { warnClass10: '471010', marineArea: '6020' },
   chubu_w: { warnClass10: '471010', marineArea: '6010' },
   chubu_e: { warnClass10: '471010', marineArea: '6020' },
   north_w: { warnClass10: '471020', marineArea: '6010' },
@@ -240,23 +244,23 @@ const JMA_AREA_META = {
 const POINTS = [
   { name: '三重城漁港', muni: '那覇市', areaId: 'naha', type: '堤防', tideAffinity: 'any', coastFacing: 'W', timingType: 'asa_yu_mazume', advice: 'サビキ仕掛けでグルクンの回遊を狙う。堤防先端が特におすすめ', lat: 26.2095, lon: 127.6712 },
   { name: '波の上うみそら公園', muni: '那覇市', areaId: 'naha', type: '堤防', tideAffinity: 'any', coastFacing: 'W', lat: 26.2183, lon: 127.6738 },
-  { name: '西崎一文字', muni: '糸満市', areaId: 'naha', type: '堤防', tideAffinity: 'any', coastFacing: 'W', lat: 26.1245, lon: 127.6435 },
-  { name: '糸満漁港', muni: '糸満市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'W', lat: 26.1215, lon: 127.6685 },
-  { name: '志喜屋漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', timingType: 'yakan', advice: '砂地混じりの堤防でタマンのぶっこみ釣りが効果的', lat: 26.1420, lon: 127.7975 },
-  { name: '安座間漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', lat: 26.1520, lon: 127.8080 },
-  { name: '海野漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', lat: 26.1280, lon: 127.7550 },
   { name: '与那原マリーナ', muni: '与那原町', areaId: 'naha', type: 'マリーナ', tideAffinity: 'any', coastFacing: 'sheltered', lat: 26.2010, lon: 127.7590 },
-  { name: '糸満フィッシャリーナ', muni: '糸満市', areaId: 'naha', type: 'マリーナ', tideAffinity: 'any', coastFacing: 'sheltered', niche: true, lat: 26.1230, lon: 127.6520 },
-  { name: '大度浜海岸', muni: '糸満市', areaId: 'naha', type: '磯', tideAffinity: 'aroundHighLow', coastFacing: 'S', niche: true, lat: 26.0810, lon: 127.6680 },
-  { name: '知念漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.1550, lon: 127.7980 },
-  { name: '久手堅船溜', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.1650, lon: 127.8050 },
-  { name: '徳仁漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.1420, lon: 127.7650 },
-  { name: '知名崎海岸', muni: '南城市', areaId: 'naha', type: '磯', tideAffinity: 'aroundHighLow', coastFacing: 'E', niche: true, lat: 26.1380, lon: 127.7700 },
-  { name: '仲伊保漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.1300, lon: 127.7450 },
-  { name: '当添漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.1850, lon: 127.7700 },
-  { name: '奥武島漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'lowTide', coastFacing: 'E', niche: true, timingType: 'kanchou_agehajime', advice: '護岸が広く足場が安定。地元で人気の穴場で家族連れにも向く', lat: 26.1440, lon: 127.7590 },
-  { name: '馬天港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.1780, lon: 127.7620 },
   { name: '西原漁港', muni: '西原町', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.2270, lon: 127.7620 },
+  { name: '西崎一文字', muni: '糸満市', areaId: 'itoman', type: '堤防', tideAffinity: 'any', coastFacing: 'W', lat: 26.1245, lon: 127.6435 },
+  { name: '糸満漁港', muni: '糸満市', areaId: 'itoman', type: '漁港', tideAffinity: 'any', coastFacing: 'W', lat: 26.1215, lon: 127.6685 },
+  { name: '糸満フィッシャリーナ', muni: '糸満市', areaId: 'itoman', type: 'マリーナ', tideAffinity: 'any', coastFacing: 'sheltered', niche: true, lat: 26.1230, lon: 127.6520 },
+  { name: '大度浜海岸', muni: '糸満市', areaId: 'itoman', type: '磯', tideAffinity: 'aroundHighLow', coastFacing: 'S', niche: true, lat: 26.0810, lon: 127.6680 },
+  { name: '志喜屋漁港', muni: '南城市', areaId: 'nanjo', type: '漁港', tideAffinity: 'any', coastFacing: 'E', timingType: 'yakan', advice: '砂地混じりの堤防でタマンのぶっこみ釣りが効果的', lat: 26.1420, lon: 127.7975 },
+  { name: '安座間漁港', muni: '南城市', areaId: 'nanjo', type: '漁港', tideAffinity: 'any', coastFacing: 'E', lat: 26.1520, lon: 127.8080 },
+  { name: '海野漁港', muni: '南城市', areaId: 'nanjo', type: '漁港', tideAffinity: 'any', coastFacing: 'E', lat: 26.1280, lon: 127.7550 },
+  { name: '知念漁港', muni: '南城市', areaId: 'nanjo', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.1550, lon: 127.7980 },
+  { name: '久手堅船溜', muni: '南城市', areaId: 'nanjo', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.1650, lon: 127.8050 },
+  { name: '徳仁漁港', muni: '南城市', areaId: 'nanjo', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.1420, lon: 127.7650 },
+  { name: '知名崎海岸', muni: '南城市', areaId: 'nanjo', type: '磯', tideAffinity: 'aroundHighLow', coastFacing: 'E', niche: true, lat: 26.1380, lon: 127.7700 },
+  { name: '仲伊保漁港', muni: '南城市', areaId: 'nanjo', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.1300, lon: 127.7450 },
+  { name: '当添漁港', muni: '南城市', areaId: 'nanjo', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.1850, lon: 127.7700 },
+  { name: '奥武島漁港', muni: '南城市', areaId: 'nanjo', type: '漁港', tideAffinity: 'lowTide', coastFacing: 'E', niche: true, timingType: 'kanchou_agehajime', advice: '護岸が広く足場が安定。地元で人気の穴場で家族連れにも向く', lat: 26.1440, lon: 127.7590 },
+  { name: '馬天港', muni: '南城市', areaId: 'nanjo', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.1780, lon: 127.7620 },
   { name: '都屋漁港', muni: '読谷村', areaId: 'chubu_w', type: '漁港', tideAffinity: 'any', coastFacing: 'W', timingType: 'yakan_soucho', advice: '常夜灯まわりでミーバイなどハタ類が狙いやすい', lat: 26.3980, lon: 127.7250 },
   { name: '真栄田漁港', muni: '恩納村', areaId: 'chubu_w', type: '漁港', tideAffinity: 'any', coastFacing: 'W', lat: 26.4650, lon: 127.7830 },
   { name: '宜野湾漁港', muni: '宜野湾市', areaId: 'chubu_w', type: '漁港', tideAffinity: 'any', coastFacing: 'sheltered', lat: 26.2950, lon: 127.7480 },
@@ -325,48 +329,48 @@ const SAMPLE_CATCHES = [
   { id: 'seed-2', date: '2026-08-10', area: 'chubu_e', place: '泡瀬干潟', fish: 'ミーバイ（ハタ類）', memo: '干潮の立ち込みで発見' },
   { id: 'seed-3', date: '2026-08-18', area: 'north_w', place: '古宇利漁港', fish: 'タチウオ', memo: '夜釣りで1本' },
   { id: 'seed-4', date: '2026-04-05', area: 'chubu_e', place: '泡瀬干潟', fish: 'シロギス（キス）', memo: '大潮の干潮でちょい投げ、型は小さめだが数釣れた' },
-  { id: 'seed-5', date: '2026-04-19', area: 'naha', place: '西崎一文字', fish: 'アイゴ（方言名：エーグヮー）', memo: '夕まずめウキ釣り。トゲに注意しつつクーラーへ' },
+  { id: 'seed-5', date: '2026-04-19', area: 'itoman', place: '西崎一文字', fish: 'アイゴ（方言名：エーグヮー）', memo: '夕まずめウキ釣り。トゲに注意しつつクーラーへ' },
   { id: 'seed-6', date: '2026-05-03', area: 'north_e', place: '宜名真漁港', fish: 'タマン（ハマフエフキ）', memo: '上げ潮の朝まずめ、置き竿にがっつりアタリ' },
   { id: 'seed-7', date: '2026-05-17', area: 'chubu_w', place: '都屋漁港', fish: 'ミーバイ（ハタ類）', memo: '常夜灯まわりの落とし込みで良型' },
-  { id: 'seed-8', date: '2026-05-28', area: 'naha', place: '奥武島漁港', fish: 'オジサン（ヒメジ類）', memo: '干潮〜上げ始めの胴突きで数尾、唐揚げにして美味しかった' },
+  { id: 'seed-8', date: '2026-05-28', area: 'nanjo', place: '奥武島漁港', fish: 'オジサン（ヒメジ類）', memo: '干潮〜上げ始めの胴突きで数尾、唐揚げにして美味しかった' },
   { id: 'seed-9', date: '2026-06-07', area: 'chubu_e', place: '伊計防波堤', fish: 'タマン（ハマフエフキ）', memo: '大潮の夜、置き竿でヒット。引きが強かった' },
   { id: 'seed-10', date: '2026-06-14', area: 'naha', place: '三重城漁港', fish: 'クロダイ（方言名：チン）', memo: '堤防際をフカセで攻めて本命' },
   { id: 'seed-11', date: '2026-06-21', area: 'north_w', place: 'チグヌ浜', fish: 'アイゴ（方言名：エーグヮー）', memo: '満潮前後、道路沿いのウキ釣りで複数尾' },
   { id: 'seed-12', date: '2026-07-05', area: 'chubu_e', place: '石川漁港', fish: 'グルクン（タカサゴ）', memo: '朝サビキで回遊にヒット' },
-  { id: 'seed-13', date: '2026-07-12', area: 'naha', place: '知念漁港', fish: 'イラブチャー（アオブダイ）', memo: '日中ぶっこみでリーフ際を攻めた' },
+  { id: 'seed-13', date: '2026-07-12', area: 'nanjo', place: '知念漁港', fish: 'イラブチャー（アオブダイ）', memo: '日中ぶっこみでリーフ際を攻めた' },
   { id: 'seed-14', date: '2026-07-20', area: 'north_e', place: '川田漁港', fish: 'グルクン（タカサゴ）', memo: '夕方サビキ、型は小さいが数釣れ' },
   { id: 'seed-15', date: '2026-07-27', area: 'naha', place: '与那原マリーナ', fish: 'タチウオ', memo: '内海の常夜灯でウキ流し、良型2本' },
   { id: 'seed-16', date: '2026-08-09', area: 'chubu_w', place: '西洲防波堤', fish: 'シロギス（キス）', memo: '日中ちょい投げでポツポツ' },
   { id: 'seed-17', date: '2026-08-16', area: 'north_w', place: '本部新港', fish: 'ガーラ（ロウニンアジ幼魚）', memo: '早朝、活き餌の泳がせで強烈な引き' },
-  { id: 'seed-18', date: '2026-08-23', area: 'naha', place: '志喜屋漁港', fish: 'タマン（ハマフエフキ）', memo: '砂地混じりの堤防で夜のぶっこみが的中' },
+  { id: 'seed-18', date: '2026-08-23', area: 'nanjo', place: '志喜屋漁港', fish: 'タマン（ハマフエフキ）', memo: '砂地混じりの堤防で夜のぶっこみが的中' },
   { id: 'seed-19', date: '2026-09-06', area: 'chubu_e', place: '海中道路周辺', fish: 'アイゴ（方言名：エーグヮー）', memo: '堤防のウキ釣りで数尾、刺身は避けて味噌汁に' },
   { id: 'seed-20', date: '2026-09-13', area: 'north_e', place: '安田漁港', fish: 'クロダイ（方言名：チン）', memo: '早朝フカセで良型、引き味最高' },
   { id: 'seed-21', date: '2025-09-21', area: 'chubu_e', place: '伊計防波堤', fish: 'ガーラ（ロウニンアジ幼魚）', memo: '大潮の夜、置き竿で強烈な引き' },
-  { id: 'seed-22', date: '2025-09-28', area: 'naha', place: '知念漁港', fish: 'タマン（ハマフエフキ）', memo: '夜のぶっこみでヒット' },
+  { id: 'seed-22', date: '2025-09-28', area: 'nanjo', place: '知念漁港', fish: 'タマン（ハマフエフキ）', memo: '夜のぶっこみでヒット' },
   { id: 'seed-23', date: '2025-10-05', area: 'north_w', place: '名護漁港', fish: 'グルクン（タカサゴ）', memo: '朝サビキで数釣り' },
   { id: 'seed-24', date: '2025-10-12', area: 'chubu_w', place: '真栄田漁港', fish: 'ミーバイ（ハタ類）', memo: '常夜灯の際釣りで良型' },
   { id: 'seed-25', date: '2025-10-19', area: 'naha', place: '与那原マリーナ', fish: 'タチウオ', memo: '秋の気配でウキ流し好調' },
   { id: 'seed-26', date: '2025-10-26', area: 'north_e', place: '慶佐次漁港', fish: 'グルクン（タカサゴ）', memo: '夕方サビキで数尾' },
   { id: 'seed-27', date: '2025-11-02', area: 'chubu_e', place: '石川漁港', fish: 'タチウオ', memo: '旬の時期に入り夕方から数本' },
-  { id: 'seed-28', date: '2025-11-09', area: 'naha', place: '奥武島漁港', fish: 'オジサン（ヒメジ類）', memo: '干潮の胴突きで数尾' },
+  { id: 'seed-28', date: '2025-11-09', area: 'nanjo', place: '奥武島漁港', fish: 'オジサン（ヒメジ類）', memo: '干潮の胴突きで数尾' },
   { id: 'seed-29', date: '2025-11-16', area: 'north_w', place: '古宇利漁港', fish: 'アイゴ（方言名：エーグヮー）', memo: 'ウキ釣りで良型' },
   { id: 'seed-30', date: '2025-11-23', area: 'naha', place: '三重城漁港', fish: 'クロダイ（方言名：チン）', memo: '堤防際のフカセで本命' },
   { id: 'seed-31', date: '2025-12-07', area: 'chubu_e', place: '石川漁港', fish: 'タチウオ', memo: '水温低下で連発、この日は5本' },
-  { id: 'seed-32', date: '2025-12-14', area: 'naha', place: '志喜屋漁港', fish: 'タマン（ハマフエフキ）', memo: '夜間、砂地混じりの堤防でぶっこみ的中' },
+  { id: 'seed-32', date: '2025-12-14', area: 'nanjo', place: '志喜屋漁港', fish: 'タマン（ハマフエフキ）', memo: '夜間、砂地混じりの堤防でぶっこみ的中' },
   { id: 'seed-33', date: '2025-12-21', area: 'north_e', place: '宜名真漁港', fish: 'タチウオ', memo: '冬の漁港内でウキ流し' },
   { id: 'seed-34', date: '2025-12-28', area: 'chubu_w', place: '都屋漁港', fish: 'ミーバイ（ハタ類）', memo: '年末、常夜灯まわりで良型' },
   { id: 'seed-35', date: '2026-01-04', area: 'naha', place: '波の上うみそら公園', fish: 'グルクン（タカサゴ）', memo: '正月明けの堤防先端でサビキ' },
   { id: 'seed-36', date: '2026-01-11', area: 'chubu_e', place: '伊計防波堤', fish: 'タマン（ハマフエフキ）', memo: '大潮の夜、置き竿でヒット' },
   { id: 'seed-37', date: '2026-01-18', area: 'north_w', place: '本部新港', fish: 'アイゴ（方言名：エーグヮー）', memo: '朝夕のウキ釣りで複数尾' },
-  { id: 'seed-38', date: '2026-01-25', area: 'naha', place: '知名崎海岸', fish: 'ミーバイ（ハタ類）', memo: '磯の際釣りで良型' },
+  { id: 'seed-38', date: '2026-01-25', area: 'nanjo', place: '知名崎海岸', fish: 'ミーバイ（ハタ類）', memo: '磯の際釣りで良型' },
   { id: 'seed-39', date: '2026-02-01', area: 'chubu_e', place: '石川漁港', fish: 'タチウオ', memo: '旬の締めくくり、良型3本' },
-  { id: 'seed-40', date: '2026-02-08', area: 'naha', place: '徳仁漁港', fish: 'クロダイ（方言名：チン）', memo: '早朝フカセで本命' },
+  { id: 'seed-40', date: '2026-02-08', area: 'nanjo', place: '徳仁漁港', fish: 'クロダイ（方言名：チン）', memo: '早朝フカセで本命' },
   { id: 'seed-41', date: '2026-02-15', area: 'north_e', place: '川田漁港', fish: 'グルクン（タカサゴ）', memo: '朝サビキで数釣り' },
   { id: 'seed-42', date: '2026-02-22', area: 'chubu_w', place: '西洲防波堤', fish: 'シロギス（キス）', memo: '日中ちょい投げでポツポツ' },
-  { id: 'seed-43', date: '2026-03-01', area: 'naha', place: '馬天港', fish: 'オジサン（ヒメジ類）', memo: '砂地混じりの堤防で数尾' },
+  { id: 'seed-43', date: '2026-03-01', area: 'nanjo', place: '馬天港', fish: 'オジサン（ヒメジ類）', memo: '砂地混じりの堤防で数尾' },
   { id: 'seed-44', date: '2026-03-08', area: 'north_w', place: '塩川湾', fish: 'シロギス（キス）', memo: '干潟でちょい投げ、数釣り' },
   { id: 'seed-45', date: '2026-03-15', area: 'chubu_e', place: '泡瀬漁港', fish: 'グルクン（タカサゴ）', memo: '朝まずめサビキで好調' },
-  { id: 'seed-46', date: '2026-03-22', area: 'naha', place: '西崎一文字', fish: 'アイゴ（方言名：エーグヮー）', memo: '夕まずめウキ釣りで数尾' },
+  { id: 'seed-46', date: '2026-03-22', area: 'itoman', place: '西崎一文字', fish: 'アイゴ（方言名：エーグヮー）', memo: '夕まずめウキ釣りで数尾' },
   { id: 'seed-47', date: '2026-03-29', area: 'north_e', place: '安田漁港', fish: 'タマン（ハマフエフキ）', memo: '上げ潮の朝まずめで本命' },
 ];
 
@@ -1039,8 +1043,13 @@ function deleteCatch(id) {
 }
 
 /* ==================== RENDER: HOME ==================== */
-function buildTideChartSVG(timeline, extrema, now) {
-  const w = 600, h = 170, padX = 36, padY = 26;
+function niceTideStep(range) {
+  const steps = [10, 20, 25, 50, 100];
+  for (let i = 0; i < steps.length; i++) { if (range / steps[i] <= 5) return steps[i]; }
+  return 100;
+}
+function buildTideChartSVG(timeline, extrema, now, isLive) {
+  const w = 600, h = 190, padX = 46, padY = 26;
   const hs = timeline.map(function (s) { return s.h; });
   const minH = Math.min.apply(null, hs), maxH = Math.max.apply(null, hs);
   const scaleX = function (i) { return padX + (i / (timeline.length - 1)) * (w - 2 * padX); };
@@ -1049,21 +1058,32 @@ function buildTideChartSVG(timeline, extrema, now) {
   timeline.forEach(function (s, i) { d += (i === 0 ? 'M' : 'L') + scaleX(i).toFixed(1) + ',' + scaleY(s.h).toFixed(1) + ' '; });
   let nowIdx = timeline.findIndex(function (s) { return s.t >= now; });
   if (nowIdx < 0) nowIdx = timeline.length - 1;
-  const nx = scaleX(nowIdx), ny = scaleY(tideHeightCm(now));
+  const nowH = tideHeightCm(now);
+  const nx = scaleX(nowIdx), ny = scaleY(nowH);
   let extMarks = '';
   extrema.forEach(function (e) {
     const idx = Math.round((e.t - timeline[0].t) / (5 * 60000));
     if (idx < 0 || idx >= timeline.length) return;
-    const ex = Math.max(28, Math.min(w - 28, scaleX(idx)));
+    const ex = Math.max(30, Math.min(w - 30, scaleX(idx)));
     const ey = scaleY(e.h);
     const ty = e.type === 'high' ? Math.max(12, ey - 10) : Math.min(h - 4, ey + 18);
     extMarks += '<circle cx="' + ex + '" cy="' + ey + '" r="4" fill="' + (e.type === 'high' ? '#FF3D81' : '#22D3EE') + '"/>';
-    extMarks += '<text x="' + ex + '" y="' + ty + '" font-size="11" text-anchor="middle" fill="#CFEFF6">' + (e.type === 'high' ? '満' : '干') + ' ' + fmt(e.t) + '</text>';
+    extMarks += '<text x="' + ex + '" y="' + ty + '" font-size="11" text-anchor="middle" fill="#CFEFF6">' + (e.type === 'high' ? '満' : '干') + ' ' + fmt(e.t) + '・' + Math.round(e.h) + 'cm</text>';
   });
+  // 潮位の数値がひと目でわかるよう、キリの良い間隔（10/20/25/50/100cm）でY軸目盛りを描く。
+  const step = niceTideStep(maxH - minH || 1);
   let grid = '';
-  for (let gy = padY; gy <= h - padY; gy += 30) grid += '<line x1="' + padX + '" y1="' + gy + '" x2="' + (w - padX) + '" y2="' + gy + '" stroke="rgba(127,243,255,0.08)" stroke-width="1"/>';
+  let axisLabels = '';
+  const tickStart = Math.ceil(minH / step) * step;
+  for (let v = tickStart; v <= maxH; v += step) {
+    const gy = scaleY(v);
+    grid += '<line x1="' + padX + '" y1="' + gy.toFixed(1) + '" x2="' + (w - padX) + '" y2="' + gy.toFixed(1) + '" stroke="rgba(127,243,255,0.10)" stroke-width="1"/>';
+    axisLabels += '<text x="' + (padX - 8) + '" y="' + (gy + 4).toFixed(1) + '" font-size="11" text-anchor="end" fill="#8FAFC2">' + Math.round(v) + 'cm</text>';
+  }
   for (let gx = padX; gx <= w - padX; gx += 60) grid += '<line x1="' + gx + '" y1="' + padY + '" x2="' + gx + '" y2="' + (h - padY) + '" stroke="rgba(127,243,255,0.08)" stroke-width="1"/>';
   const areaD = d.trim() + ' L' + (w - padX) + ',' + (h - padY) + ' L' + padX + ',' + (h - padY) + ' Z';
+  const nowLabelX = Math.max(padX + 34, Math.min(w - padX - 34, nx));
+  const nowLabelY = ny < h / 2 ? ny + 22 : ny - 14;
   return '<svg viewBox="0 0 ' + w + ' ' + h + '" class="tide-chart" preserveAspectRatio="xMidYMid meet">' +
     '<defs>' +
       '<filter id="tideGlow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
@@ -1072,8 +1092,11 @@ function buildTideChartSVG(timeline, extrema, now) {
     grid +
     '<path d="' + areaD + '" fill="url(#tideFill)" stroke="none"/>' +
     '<path d="' + d + '" fill="none" stroke="#22D3EE" stroke-width="2.5" filter="url(#tideGlow)"/>' + extMarks +
-    '<line x1="' + nx + '" y1="0" x2="' + nx + '" y2="' + h + '" stroke="#FF3D81" stroke-dasharray="4,3" stroke-width="1.5"/>' +
-    '<circle cx="' + nx + '" cy="' + ny + '" r="5" fill="#FF3D81" stroke="#DCEFF5" stroke-width="1.5" filter="url(#tideGlow)"/></svg>';
+    axisLabels +
+    '<line x1="' + nx + '" y1="' + padY + '" x2="' + nx + '" y2="' + (h - padY) + '" stroke="#FF3D81" stroke-dasharray="4,3" stroke-width="1.5"/>' +
+    '<circle cx="' + nx + '" cy="' + ny + '" r="5" fill="#FF3D81" stroke="#DCEFF5" stroke-width="1.5" filter="url(#tideGlow)"/>' +
+    '<text x="' + nowLabelX + '" y="' + nowLabelY + '" font-size="12" font-weight="700" text-anchor="middle" fill="#FF9DBE">' + (isLive ? '現在' : 'この時刻') + ' ' + Math.round(nowH) + 'cm</text>' +
+    '</svg>';
 }
 function getCtx(areaId) {
   areaId = areaId || state.area;
@@ -1105,7 +1128,7 @@ function renderHome() {
   const el = document.getElementById('tab-home');
   const area = AREAS.find(function (a) { return a.id === state.area; });
   const ctx = getCtx();
-  const chart = buildTideChartSVG(ctx.timeline, ctx.extrema, ctx.now);
+  const chart = buildTideChartSVG(ctx.timeline, ctx.extrema, ctx.now, ctx.isLive);
   const stateLabel = tideStateLabelJP(ctx.tideState);
   let windHtml = '<span class="muted">取得中...</span>';
   if (!ctx.loading) {
