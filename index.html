@@ -144,6 +144,10 @@
   .fish-avatar{width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,var(--cyan-dim),var(--cyan)); color:#04222a; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800; margin:0 auto 10px; box-shadow:0 0 14px rgba(34,211,238,0.35);}
   .fish-btn .fname{font-size:13px; font-weight:700; line-height:1.4; color:var(--ink);}
   .rig-svg{width:100%; max-width:260px; display:block; margin:14px auto;}
+  .fish-svg{width:100%; max-width:320px; display:block; margin:0 auto 14px;}
+  .fish-svg-mini{width:100%; max-width:80px; display:block; margin:0 auto 8px; border-radius:10px;}
+  .cooking-box{margin-top:14px; background:var(--sand); border:1px solid var(--sand-dark); border-radius:12px; padding:14px 16px; font-size:14px; line-height:1.7;}
+  .cooking-box .ck-label{color:var(--good); font-weight:800; display:block; margin-bottom:4px;}
   .term-chip{display:inline-flex; align-items:center; gap:5px; background:var(--sand); border:1px solid var(--sand-dark); border-radius:8px; padding:6px 14px; font-size:14px; font-weight:600; margin:4px 6px 4px 0; cursor:pointer; color:var(--ink);}
   .term-chip:hover{border-color:var(--cyan);}
   .term-chip .q{background:var(--cyan); color:#04222a; border-radius:50%; width:17px; height:17px; font-size:11px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; font-weight:800;}
@@ -270,16 +274,26 @@ const POINTS = [
 ];
 
 const FISH_DB = [
-  { key: 'gurukun', name: 'グルクン（タカサゴ）', rig: 'サビキ仕掛け・カゴ仕掛け', bait: 'オキアミ・サビキ皮3号前後', timing: '朝・夕方、堤防先端、年中', rigType: 'sabiki', terms: ['サビキ仕掛け','カゴ仕掛け'] },
-  { key: 'miibai', name: 'ミーバイ（ハタ類）', rig: '落とし込み仕掛け・際釣り仕掛け', bait: '生エビ・小魚', timing: '夜間〜早朝、石場・テトラ帯', rigType: 'otoshikomi', terms: ['落とし込み仕掛け','際釣り'] },
-  { key: 'irabuchaa', name: 'イラブチャー（アオブダイ）', rig: 'ぶっこみ仕掛け', bait: 'オキアミ', timing: '日中、リーフ周辺', rigType: 'bukkomi', terms: ['ぶっこみ仕掛け'] },
-  { key: 'taman', name: 'タマン（ハマフエフキ）', rig: 'ぶっこみ仕掛け（置き竿）', bait: 'カニ・エビ', timing: '夜間、砂地混じりの堤防', rigType: 'bukkomi_oki', terms: ['ぶっこみ仕掛け','置き竿'] },
-  { key: 'gara', name: 'ガーラ（ロウニンアジ幼魚）', rig: 'ぶっこみ仕掛け（泳がせ）', bait: '活き餌（グルクンなど小魚）', timing: '夜間〜早朝、干瀬際、夏〜秋', rigType: 'bukkomi_oyogase', terms: ['ぶっこみ仕掛け','泳がせ'] },
-  { key: 'tachiuo', name: 'タチウオ', rig: '飲ませ釣り・ウキ流し仕掛け', bait: '活きアジ・キビナゴ', timing: '秋〜冬、夜間、漁港内', rigType: 'nomase', terms: ['飲ませ釣り','ウキ流し仕掛け'] },
-  { key: 'kisu', name: 'シロギス（キス）', rig: 'ちょい投げ仕掛け', bait: 'アオイソメ・ジャリメ', timing: '日中、干潟・砂浜、夏〜秋。天ぷらで人気の定番食材', rigType: 'choinage', terms: ['ちょい投げ仕掛け'] },
-  { key: 'aigo', name: 'アイゴ（方言名：エーグヮー）', rig: 'ウキ釣り仕掛け', bait: 'オキアミ・アオサ', timing: '朝夕、堤防・磯、年中。背びれ等のトゲに毒があるので素手で触らないよう注意', rigType: 'ukizuri', terms: ['ウキ釣り仕掛け'] },
-  { key: 'kurodai', name: 'クロダイ（方言名：チン）', rig: 'フカセ釣り仕掛け', bait: 'オキアミ・カニ', timing: '早朝・夕方、堤防際や河口、年中。引き味も良く人気の食材', rigType: 'ukizuri', terms: ['フカセ釣り'] },
-  { key: 'ojisan', name: 'オジサン（ヒメジ類）', rig: 'ちょい投げ・胴突き仕掛け', bait: 'イソメ類・オキアミ', timing: '日中〜夕方、砂地混じりの堤防・浜、年中。だしが出て煮付けや唐揚げに人気', rigType: 'choinage', terms: ['ちょい投げ仕掛け'] },
+  { key: 'gurukun', name: 'グルクン（タカサゴ）', rig: 'サビキ仕掛け・カゴ仕掛け', bait: 'オキアミ・サビキ皮3号前後', timing: '朝・夕方、堤防先端、年中', rigType: 'sabiki', terms: ['サビキ仕掛け','カゴ仕掛け'],
+    cooking: '沖縄の県魚。から揚げが定番中の定番で、皮目がパリッと香ばしく骨まで食べられる。新鮮なら刺身や、塩でシンプルに煮る「マース煮」もおすすめ。' },
+  { key: 'miibai', name: 'ミーバイ（ハタ類）', rig: '落とし込み仕掛け・際釣り仕掛け', bait: '生エビ・小魚', timing: '夜間〜早朝、石場・テトラ帯', rigType: 'otoshikomi', terms: ['落とし込み仕掛け','際釣り'],
+    cooking: '身が締まった白身で刺身が絶品。塩で煮る「マース煮」や唐揚げも美味しい。アラは味噌汁にすると良い出汁が出る。' },
+  { key: 'irabuchaa', name: 'イラブチャー（アオブダイ）', rig: 'ぶっこみ仕掛け', bait: 'オキアミ', timing: '日中、リーフ周辺', rigType: 'bukkomi', terms: ['ぶっこみ仕掛け'],
+    cooking: '見た目は鮮やかな青緑だが加熱すると白身で淡白。唐揚げやバター焼きが定番。新鮮であれば刺身も可（皮の色が沖縄らしい）。' },
+  { key: 'taman', name: 'タマン（ハマフエフキ）', rig: 'ぶっこみ仕掛け（置き竿）', bait: 'カニ・エビ', timing: '夜間、砂地混じりの堤防', rigType: 'bukkomi_oki', terms: ['ぶっこみ仕掛け','置き竿'],
+    cooking: '沖縄で高級魚として人気。刺身、塩焼き、マース煮どれも絶品。アラ汁も濃厚で美味しい。' },
+  { key: 'gara', name: 'ガーラ（ロウニンアジ幼魚）', rig: 'ぶっこみ仕掛け（泳がせ）', bait: '活き餌（グルクンなど小魚）', timing: '夜間〜早朝、干瀬際、夏〜秋', rigType: 'bukkomi_oyogase', terms: ['ぶっこみ仕掛け','泳がせ'],
+    cooking: '幼魚は脂がのって刺身やカルパッチョが美味しい。塩焼きも◎。※大型個体は稀にシガテラ毒のリスクが指摘されるため、大きく育った個体を食べる際は詳しい人に確認を。' },
+  { key: 'tachiuo', name: 'タチウオ', rig: '飲ませ釣り・ウキ流し仕掛け', bait: '活きアジ・キビナゴ', timing: '秋〜冬、夜間、漁港内', rigType: 'nomase', terms: ['飲ませ釣り','ウキ流し仕掛け'],
+    cooking: '塩焼きが定番で、皮の脂の旨味が際立つ。天ぷらやムニエルも人気。新鮮なものは刺身や炙りも美味しい。' },
+  { key: 'kisu', name: 'シロギス（キス）', rig: 'ちょい投げ仕掛け', bait: 'アオイソメ・ジャリメ', timing: '日中、干潟・砂浜、夏〜秋。天ぷらで人気の定番食材', rigType: 'choinage', terms: ['ちょい投げ仕掛け'],
+    cooking: '天ぷらの王道ネタ。淡白な白身でから揚げや南蛮漬けにしても美味しい。小骨が少なく食べやすい。' },
+  { key: 'aigo', name: 'アイゴ（方言名：エーグヮー）', rig: 'ウキ釣り仕掛け', bait: 'オキアミ・アオサ', timing: '朝夕、堤防・磯、年中。背びれ等のトゲに毒があるので素手で触らないよう注意', rigType: 'ukizuri', terms: ['ウキ釣り仕掛け'],
+    cooking: '味噌汁や唐揚げが定番。内臓から独特の香りが出やすいので、釣ったら早めに内臓を取り除くのがコツ。※調理前にヒレの毒棘に注意（グローブや厚手のタオルで扱うと安全）。' },
+  { key: 'kurodai', name: 'クロダイ（方言名：チン）', rig: 'フカセ釣り仕掛け', bait: 'オキアミ・カニ', timing: '早朝・夕方、堤防際や河口、年中。引き味も良く人気の食材', rigType: 'ukizuri', terms: ['フカセ釣り'],
+    cooking: '刺身や塩焼きが定番。うろこごと揚げる「松笠揚げ」も見た目が華やかで美味しい。臭みが出やすい大型は塩締めしてから調理すると良い。' },
+  { key: 'ojisan', name: 'オジサン（ヒメジ類）', rig: 'ちょい投げ・胴突き仕掛け', bait: 'イソメ類・オキアミ', timing: '日中〜夕方、砂地混じりの堤防・浜、年中。だしが出て煮付けや唐揚げに人気', rigType: 'choinage', terms: ['ちょい投げ仕掛け'],
+    cooking: '出汁がよく出るので煮付けが絶品。唐揚げや天ぷらにしても骨まで香ばしく食べられる。' },
 ];
 
 const GLOSSARY = {
@@ -609,6 +623,89 @@ function svgFrame(inner) {
     '<line x1="20" y1="18" x2="55" y2="8" stroke="#C98B4A" stroke-width="5" stroke-linecap="round"/>' +
     inner + '</svg>';
 }
+/* ==================== FISH ILLUSTRATIONS (簡易SVGイラスト) ==================== */
+function fishFrame(inner) {
+  return '<svg viewBox="0 0 260 170" class="fish-svg" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs><linearGradient id="fishBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#132A42"/><stop offset="100%" stop-color="#0A1626"/></linearGradient></defs>' +
+    '<rect width="260" height="170" rx="16" fill="url(#fishBg)" stroke="rgba(127,243,255,0.25)" stroke-width="1"/>' +
+    inner + '</svg>';
+}
+// 体・尾びれ・背びれ・胸びれ・目という共通パーツを組み立てる。cx/cyを中心に、頭を右向きにする。
+function fishParts(bodyRx, bodyRy, bodyFill) {
+  const cx = 150, cy = 90;
+  return {
+    tail: '<path d="M' + (cx - bodyRx + 4) + ',' + cy + ' L' + (cx - bodyRx - 34) + ',' + (cy - 26) + ' L' + (cx - bodyRx - 34) + ',' + (cy + 26) + ' Z" fill="' + bodyFill + '" opacity="0.85"/>',
+    body: '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + bodyRx + '" ry="' + bodyRy + '" fill="' + bodyFill + '"/>',
+    dorsal: '<path d="M' + (cx - 8) + ',' + (cy - bodyRy + 2) + ' L' + (cx + 6) + ',' + (cy - bodyRy - 16) + ' L' + (cx + 26) + ',' + (cy - bodyRy + 4) + ' Z" fill="' + bodyFill + '" opacity="0.9"/>',
+    pectoral: '<path d="M' + (cx + 6) + ',' + (cy + bodyRy * 0.4) + ' L' + (cx - 8) + ',' + (cy + bodyRy + 14) + ' L' + (cx + 24) + ',' + (cy + bodyRy * 0.65) + ' Z" fill="' + bodyFill + '" opacity="0.75"/>',
+    eye: '<circle cx="' + (cx + bodyRx - 15) + '" cy="' + (cy - 8) + '" r="5.5" fill="#04121A"/><circle cx="' + (cx + bodyRx - 13) + '" cy="' + (cy - 10) + '" r="1.8" fill="#fff"/>',
+    cx: cx, cy: cy
+  };
+}
+const FISH_SVG_BUILDERS = {
+  gurukun: function () {
+    const p = fishParts(78, 26, '#4FD1E8');
+    return fishFrame(p.tail + p.body + p.dorsal + p.pectoral +
+      '<rect x="90" y="' + (p.cy - 6) + '" width="130" height="10" rx="5" fill="#FFD54A" opacity="0.9"/>' +
+      p.eye);
+  },
+  miibai: function () {
+    const p = fishParts(82, 32, '#B98A5A');
+    let spots = '';
+    const dots = [[110,78],[135,100],[160,72],[175,98],[125,60],[150,110]];
+    dots.forEach(function (d) { spots += '<circle cx="' + d[0] + '" cy="' + d[1] + '" r="5" fill="#7A5230" opacity="0.7"/>'; });
+    return fishFrame(p.tail + p.body + spots + p.dorsal + p.pectoral +
+      '<path d="M210,' + p.cy + ' q14,-4 16,6 q-2,10 -16,6 Z" fill="#B98A5A"/>' + p.eye);
+  },
+  irabuchaa: function () {
+    const p = fishParts(80, 30, '#2FD1A8');
+    return fishFrame(p.tail + p.body + p.dorsal + p.pectoral +
+      '<ellipse cx="216" cy="' + p.cy + '" rx="14" ry="12" fill="#1FA98A"/>' +
+      p.eye);
+  },
+  taman: function () {
+    const p = fishParts(80, 28, '#C9D3D8');
+    return fishFrame(p.tail + p.body + p.dorsal + p.pectoral +
+      '<path d="M212,' + p.cy + ' L232,' + (p.cy - 6) + ' L232,' + (p.cy + 6) + ' Z" fill="#C9D3D8"/>' + p.eye);
+  },
+  gara: function () {
+    const p = fishParts(80, 30, '#8FA6B8');
+    let bars = '';
+    [-40, -15, 12, 38].forEach(function (dx) { bars += '<rect x="' + (p.cx + dx) + '" y="' + (p.cy - 28) + '" width="7" height="56" fill="#3A4E5C" opacity="0.5"/>'; });
+    return fishFrame(p.tail + p.body + bars + p.dorsal + p.pectoral + p.eye);
+  },
+  tachiuo: function () {
+    return fishFrame(
+      '<path d="M30,90 C80,60 150,120 230,88 L226,96 C150,128 80,70 34,98 Z" fill="#D8E4EA"/>' +
+      '<path d="M226,88 L246,82 L246,94 Z" fill="#D8E4EA"/>' +
+      '<circle cx="224" cy="86" r="4" fill="#04121A"/>'
+    );
+  },
+  kisu: function () {
+    const p = fishParts(72, 18, '#F0E4C8');
+    return fishFrame(p.tail + p.body + p.dorsal + p.pectoral + p.eye);
+  },
+  aigo: function () {
+    const p = fishParts(78, 30, '#8FA85A');
+    let spots = '';
+    const dots = [[115,75],[140,95],[160,78],[130,105]];
+    dots.forEach(function (d) { spots += '<circle cx="' + d[0] + '" cy="' + d[1] + '" r="4" fill="#D8E4A0" opacity="0.8"/>'; });
+    let spines = '';
+    for (let i = 0; i < 6; i++) { const x = p.cx - 40 + i * 14; spines += '<line x1="' + x + '" y1="' + (p.cy - 30) + '" x2="' + x + '" y2="' + (p.cy - 46) + '" stroke="#5C7A2E" stroke-width="2"/>'; }
+    return fishFrame(p.tail + p.body + spots + spines + p.pectoral + p.eye);
+  },
+  kurodai: function () {
+    const p = fishParts(80, 34, '#7E8C94');
+    return fishFrame(p.tail + p.body + p.dorsal + p.pectoral + p.eye);
+  },
+  ojisan: function () {
+    const p = fishParts(76, 26, '#E8927A');
+    return fishFrame(p.tail + p.body + p.dorsal + p.pectoral +
+      '<path d="M' + (p.cx + 60) + ',' + (p.cy + 10) + ' q10,14 2,26" stroke="#E8927A" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+      '<path d="M' + (p.cx + 66) + ',' + (p.cy + 12) + ' q10,16 0,28" stroke="#E8927A" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+      p.eye);
+  }
+};
 const RIG_BUILDERS = {
   sabiki: function () {
     return svgFrame(
@@ -1062,8 +1159,9 @@ function renderFish() {
   const el = document.getElementById('tab-fish');
   let grid = '<div class="card"><h2>🐟 狙いの魚を選ぶ</h2><div class="fish-grid">';
   FISH_DB.forEach(function (f) {
+    const mini = FISH_SVG_BUILDERS[f.key] ? FISH_SVG_BUILDERS[f.key]().replace('class="fish-svg"', 'class="fish-svg-mini"') : '';
     grid += '<div class="fish-btn' + (state.activeFish === f.key ? ' active' : '') + '" data-fish="' + f.key + '">' +
-      '<div class="fish-avatar">' + f.name.charAt(0) + '</div><div class="fname">' + f.name + '</div></div>';
+      mini + '<div class="fname">' + f.name + '</div></div>';
   });
   grid += '</div></div>';
 
@@ -1076,12 +1174,15 @@ function renderFish() {
     (f.terms || []).forEach(function (t) {
       terms += '<span class="term-chip" data-term="' + t + '"><span class="q">?</span>' + t + '</span>';
     });
+    const fishSvg = FISH_SVG_BUILDERS[f.key] ? FISH_SVG_BUILDERS[f.key]() : '';
     detail = '<div class="card">' +
-      '<h3>' + f.name + '</h3>' + rigSvg +
+      '<h3>' + f.name + '</h3>' + fishSvg +
+      '<div style="margin:4px 0 12px; text-align:center;" class="muted">仕掛け図解 ↓</div>' + rigSvg +
       '<div><b>仕掛け：</b>' + f.rig + '</div>' +
       '<div style="margin-top:4px;">' + terms + '</div>' +
       '<div style="margin-top:8px;"><b>餌：</b>' + f.bait + '</div>' +
       '<div style="margin-top:8px;"><b>狙い目：</b>' + f.timing + '</div>' +
+      (f.cooking ? '<div class="cooking-box"><span class="ck-label">🍽️ 食べ方・おすすめ調理法</span>' + f.cooking + '</div>' : '') +
       '</div>';
     areaMatches = renderFishAreaMatches(f);
   }
