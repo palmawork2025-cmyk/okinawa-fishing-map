@@ -89,7 +89,24 @@
   .stat{background:var(--sand); border-radius:10px; padding:16px 10px; text-align:center; border:1px solid var(--sand-dark);}
   .stat .v{font-size:22px; font-weight:800; color:var(--cyan-bright); font-family:"SFMono-Regular",Consolas,"Roboto Mono",monospace; text-shadow:0 0 14px rgba(34,211,238,0.35);}
   .stat .l{font-size:12px; color:var(--ink-soft); margin-top:6px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;}
-  .tide-chart{width:100%; height:auto; display:block; margin-top:14px;}
+  .tide-chart{width:100%; height:auto; max-height:260px; display:block; margin:14px auto 0;}
+  .alert-banner{
+    display:flex; align-items:flex-start; gap:12px; background:linear-gradient(120deg,rgba(255,61,90,0.18),rgba(255,61,90,0.08));
+    border:1px solid rgba(255,61,90,0.5); border-radius:14px; padding:16px 18px; margin-bottom:20px; box-shadow:0 0 20px rgba(255,61,90,0.15);
+  }
+  .alert-banner .ab-icon{font-size:26px; line-height:1;}
+  .alert-banner b{color:#FF7A8C; font-size:16px;}
+  .alert-banner .ab-sub{font-size:12.5px; color:var(--ink-soft); margin-top:4px; line-height:1.5;}
+  .jma-compare{background:var(--sand); border:1px solid var(--sand-dark); border-radius:10px; padding:12px 14px; margin-top:12px; font-size:13.5px; line-height:1.6;}
+  .jma-compare .jc-label{color:var(--cyan-bright); font-weight:700; margin-right:4px;}
+  .comment-line{margin-top:10px; font-size:14px; line-height:1.6; padding:10px 12px; background:var(--sand); border-radius:10px; border:1px solid var(--sand-dark);}
+  .expect-badge{display:inline-flex; align-items:center; gap:6px; background:rgba(34,211,238,0.1); border:1px solid rgba(34,211,238,0.4); border-radius:8px; padding:6px 12px; font-size:14px; font-weight:700; color:var(--cyan-bright); margin-top:10px;}
+  .expect-badge b{font-size:17px; font-family:"SFMono-Regular",Consolas,"Roboto Mono",monospace;}
+  .hotspot-toggle{margin-top:10px; background:none; border:1px dashed var(--sand-dark); color:var(--ink-soft); border-radius:8px; padding:7px 12px; font-size:12.5px; font-weight:700; cursor:pointer; width:100%; text-align:left;}
+  .hotspot-toggle:hover{border-color:var(--cyan);}
+  .hotspot-detail{margin-top:8px; font-size:13.5px; color:var(--ink-soft); line-height:1.6; background:rgba(34,211,238,0.06); border-left:3px solid var(--cyan-dim); padding:10px 12px; border-radius:0 8px 8px 0;}
+  .fish-area-heading{font-size:15px; color:var(--cyan-bright); font-weight:800; margin:18px 0 10px; display:flex; align-items:center; gap:6px;}
+  .fish-area-heading:first-of-type{margin-top:4px;}
   .btn-refresh{border:1px solid var(--cyan); background:rgba(34,211,238,0.1); color:var(--cyan-bright); border-radius:8px; padding:9px 18px; font-size:13.5px; font-weight:700; cursor:pointer; transition:all 0.15s;}
   .btn-refresh:hover{background:var(--cyan); color:#04222a;}
   .badge{display:inline-block; padding:5px 12px; border-radius:6px; font-size:12.5px; font-weight:800; letter-spacing:0.02em;}
@@ -184,6 +201,17 @@ const AREAS = [
   { id: 'north_w', name: '北部（やんばる西）', lat: 26.5918, lon: 127.9770 },
   { id: 'north_e', name: '北部（やんばる東）', lat: 26.7300, lon: 128.2350 },
 ];
+
+// 気象庁「地方海上予報」「警報注意報」の集約データ（jma-data.json）と、
+// アプリの5エリアの対応づけ。warnClass10 = 沖縄気象台の警報区分（本島中南部/本島北部）、
+// marineArea = 地方海上予報の海域コード（東シナ海南部=6010 / 沖縄東方海上=6020）。
+const JMA_AREA_META = {
+  naha: { warnClass10: '471010', marineArea: '6010' },
+  chubu_w: { warnClass10: '471010', marineArea: '6010' },
+  chubu_e: { warnClass10: '471010', marineArea: '6020' },
+  north_w: { warnClass10: '471020', marineArea: '6010' },
+  north_e: { warnClass10: '471020', marineArea: '6020' },
+};
 
 const POINTS = [
   { name: '三重城漁港', muni: '那覇市', areaId: 'naha', type: '堤防', tideAffinity: 'any', coastFacing: 'W', timingType: 'asa_yu_mazume', advice: 'サビキ仕掛けでグルクンの回遊を狙う。堤防先端が特におすすめ' },
@@ -480,6 +508,52 @@ function genericAdvice(point) {
   };
   return map[point.type] || '潮と風の様子を見ながら探ってみましょう。';
 }
+// ポイントの中でもさらに具体的な「この辺りが釣れやすい」という一般的な狙い目の目安。
+// 特定スポットの実釣情報ではなく、地形タイプごとに一般的に言われるセオリーです。
+function hotspotTip(point) {
+  const map = {
+    '漁港': '船揚げ場のスロープ際や常夜灯の明暗の境目は、小魚が集まりやすく反応が出やすいポイントです。船溜まりの出入り口（潮の通り道）も要チェック。',
+    '堤防': '堤防の先端付近、外洋側（潮通しの良い側）が本命。曲がり角になっている「ヨレ」の部分は潮がぶつかって魚が着きやすい場所です。',
+    '干潟': '潮が引いた後に残る澪筋（みおすじ＝溝状に水が残る部分）沿いは、魚の通り道になりやすい狙い目です。',
+    '磯': '白波が立つ「サラシ」の際や、沖に張り出した岩の先端周りは酸素が多く魚の活性が上がりやすいポイントです。',
+    'マリーナ': '係留船の陰や桟橋の柱の際は、魚が身を隠しやすく着きやすい場所です。',
+    '浜': '波打ち際よりやや沖の「カケアガリ」（急に深くなる駆け上がり）を探ると反応が出やすくなります。',
+  };
+  return map[point.type] || '潮通しの良い場所を中心に、少しずつ探ってみましょう。';
+}
+// スコアを「本日の釣果期待度」という直感的なパーセント表示に変換する（統計的な予測ではなく演出）。
+function scoreToPercent(score) {
+  const pct = Math.round(30 + (score + 6) * 5.1);
+  return Math.max(15, Math.min(97, pct));
+}
+// 狙いの魚 → 相性の良いポイントタイプ（複数エリア横断のおすすめポイント表示に使用）
+const FISH_TYPE_MATCH = {
+  gurukun: ['堤防', '漁港', 'マリーナ'],
+  miibai: ['漁港', '堤防', '磯'],
+  irabuchaa: ['磯', '浜', '堤防'],
+  taman: ['堤防', '漁港', '浜'],
+  gara: ['磯', '堤防', '浜'],
+  tachiuo: ['漁港', 'マリーナ'],
+};
+function matchesFish(point, fishKey) {
+  const types = FISH_TYPE_MATCH[fishKey] || [];
+  return types.indexOf(point.type) !== -1;
+}
+// 風・波の数値に対する一言コメント（初心者向けにワクワク／注意をワンフレーズで伝える）
+function windComment(speed) {
+  if (speed == null) return '';
+  if (speed >= 12) return '🌀 風が非常に強く、釣りにならないレベルです。無理は禁物！';
+  if (speed >= 8) return '💨 風が強め。仕掛けが流されやすいので重めのオモリを。';
+  if (speed >= 5) return '🍃 やや風がありますが、釣りは十分楽しめます。';
+  return '😌 穏やかな風で釣りやすいコンディションです。';
+}
+function waveComment(height) {
+  if (height == null) return '';
+  if (height >= 2.0) return '🚨 波が荒れていて危険です。釣行は控えましょう。';
+  if (height >= 1.2) return '⚠️ 波がやや高め。足元とライフジャケットに注意してください。';
+  if (height >= 0.6) return '🌊 多少うねりはありますが、問題なく釣りができます。';
+  return '✨ 波は穏やかで絶好のコンディションです。';
+}
 
 /* ==================== RIG SVG DIAGRAMS ==================== */
 function partHook(x, y) { return '<path d="M ' + x + ' ' + y + ' q -8 10 0 18 q 8 6 10 -4" stroke="#EAF6FB" stroke-width="2" fill="none" stroke-linecap="round"/>'; }
@@ -571,7 +645,22 @@ const RIG_BUILDERS = {
 };
 
 /* ==================== STATE ==================== */
-const state = { area: 'naha', cache: {}, activeTab: 'home', showAllPoints: false, activeFish: null };
+const state = { area: 'naha', cache: {}, activeTab: 'home', showAllPoints: false, activeFish: null, jma: null, jmaLoaded: false, expandedPoints: new Set() };
+
+/* ==================== JMA (気象庁 地方海上予報・警報注意報) ==================== */
+// 同一オリジンの静的スナップショット（jma-data.json）を読み込む。ライブAPIではなく、
+// 定期的に手動更新するファイルなので、常に取得時刻を表示して鮮度を明示する。
+async function fetchJmaData() {
+  try {
+    const res = await fetch('./jma-data.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error('jma-data.json not found');
+    state.jma = await res.json();
+  } catch (e) {
+    state.jma = null;
+  }
+  state.jmaLoaded = true;
+  renderHome();
+}
 
 /* ==================== API ==================== */
 async function fetchAreaData(area) {
@@ -635,11 +724,11 @@ function deleteCatch(id) {
 
 /* ==================== RENDER: HOME ==================== */
 function buildTideChartSVG(timeline, extrema, now) {
-  const w = 600, h = 150, pad = 10;
+  const w = 600, h = 170, padX = 36, padY = 26;
   const hs = timeline.map(function (s) { return s.h; });
   const minH = Math.min.apply(null, hs), maxH = Math.max.apply(null, hs);
-  const scaleX = function (i) { return pad + (i / (timeline.length - 1)) * (w - 2 * pad); };
-  const scaleY = function (v) { return h - pad - ((v - minH) / (maxH - minH || 1)) * (h - 2 * pad); };
+  const scaleX = function (i) { return padX + (i / (timeline.length - 1)) * (w - 2 * padX); };
+  const scaleY = function (v) { return h - padY - ((v - minH) / (maxH - minH || 1)) * (h - 2 * padY); };
   let d = '';
   timeline.forEach(function (s, i) { d += (i === 0 ? 'M' : 'L') + scaleX(i).toFixed(1) + ',' + scaleY(s.h).toFixed(1) + ' '; });
   let nowIdx = timeline.findIndex(function (s) { return s.t >= now; });
@@ -649,15 +738,17 @@ function buildTideChartSVG(timeline, extrema, now) {
   extrema.forEach(function (e) {
     const idx = Math.round((e.t - timeline[0].t) / (5 * 60000));
     if (idx < 0 || idx >= timeline.length) return;
-    const ex = scaleX(idx), ey = scaleY(e.h);
+    const ex = Math.max(28, Math.min(w - 28, scaleX(idx)));
+    const ey = scaleY(e.h);
+    const ty = e.type === 'high' ? Math.max(12, ey - 10) : Math.min(h - 4, ey + 18);
     extMarks += '<circle cx="' + ex + '" cy="' + ey + '" r="4" fill="' + (e.type === 'high' ? '#FF3D81' : '#22D3EE') + '"/>';
-    extMarks += '<text x="' + ex + '" y="' + (e.type === 'high' ? ey - 8 : ey + 16) + '" font-size="10" text-anchor="middle" fill="#CFEFF6">' + (e.type === 'high' ? '満' : '干') + ' ' + fmt(e.t) + '</text>';
+    extMarks += '<text x="' + ex + '" y="' + ty + '" font-size="11" text-anchor="middle" fill="#CFEFF6">' + (e.type === 'high' ? '満' : '干') + ' ' + fmt(e.t) + '</text>';
   });
   let grid = '';
-  for (let gy = 0; gy <= h; gy += 30) grid += '<line x1="0" y1="' + gy + '" x2="' + w + '" y2="' + gy + '" stroke="rgba(127,243,255,0.08)" stroke-width="1"/>';
-  for (let gx = 0; gx <= w; gx += 50) grid += '<line x1="' + gx + '" y1="0" x2="' + gx + '" y2="' + h + '" stroke="rgba(127,243,255,0.08)" stroke-width="1"/>';
-  const areaD = d.trim() + ' L' + w + ',' + h + ' L0,' + h + ' Z';
-  return '<svg viewBox="0 0 ' + w + ' ' + h + '" class="tide-chart">' +
+  for (let gy = padY; gy <= h - padY; gy += 30) grid += '<line x1="' + padX + '" y1="' + gy + '" x2="' + (w - padX) + '" y2="' + gy + '" stroke="rgba(127,243,255,0.08)" stroke-width="1"/>';
+  for (let gx = padX; gx <= w - padX; gx += 60) grid += '<line x1="' + gx + '" y1="' + padY + '" x2="' + gx + '" y2="' + (h - padY) + '" stroke="rgba(127,243,255,0.08)" stroke-width="1"/>';
+  const areaD = d.trim() + ' L' + (w - padX) + ',' + (h - padY) + ' L' + padX + ',' + (h - padY) + ' Z';
+  return '<svg viewBox="0 0 ' + w + ' ' + h + '" class="tide-chart" preserveAspectRatio="xMidYMid meet">' +
     '<defs>' +
       '<filter id="tideGlow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
       '<linearGradient id="tideFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#22D3EE" stop-opacity="0.35"/><stop offset="100%" stop-color="#22D3EE" stop-opacity="0"/></linearGradient>' +
@@ -697,7 +788,36 @@ function renderHome() {
     waveHtml = (ctx.wave != null) ? ctx.wave.toFixed(1) + 'm' : '<span class="muted">データなし</span>';
   }
   const tsLabel = state.cache[state.area] && state.cache[state.area].ts ? fmt(state.cache[state.area].ts) + '時点' : '';
-  el.innerHTML =
+
+  // 気象庁 警報注意報（沖縄気象台のスナップショット）
+  const jmaMeta = JMA_AREA_META[state.area];
+  let bannerHtml = '';
+  if (state.jma && state.jma.warningsByArea) {
+    const warns = state.jma.warningsByArea[jmaMeta.warnClass10] || [];
+    if (warns.length) {
+      const names = warns.map(function (w) { return w.name + (w.additions && w.additions.length ? '（' + w.additions.join('・') + '）' : ''); }).join('、');
+      const rdt = warns[0].reportDatetime ? new Date(warns[0].reportDatetime) : null;
+      bannerHtml = '<div class="alert-banner"><span class="ab-icon">⚠️</span><div><b>' + names + '</b> 発表中 — ' + area.name +
+        '<div class="ab-sub">気象庁' + (state.jma.publishingOffice || '沖縄気象台') + (rdt ? ' ' + fmt(rdt) + '発表' : '') +
+        ' ／ このサイトのデータ取得: ' + fmtJmaFetched(state.jma.fetchedAt) + '（最新情報は気象庁サイトでご確認ください）</div></div></div>';
+    }
+  }
+
+  // 気象庁 地方海上予報（沖合参考値）
+  let jmaCompareHtml = '';
+  if (state.jma && state.jma.marine) {
+    const m = state.jma.marine[jmaMeta.marineArea];
+    if (m && m.today) {
+      jmaCompareHtml = '<div class="jma-compare"><span class="jc-label">🛰️ 気象庁 地方海上予報（沖合・今日／' + m.name + '）</span><br>' +
+        '波高: ' + (m.today.wave || 'ー') + '　／　風: ' + (m.today.wind || 'ー') +
+        '<div class="muted" style="margin-top:4px;">※沖合の予報区の値です。上の「波の高さ」（Open-Meteo・沿岸推定）とは対象範囲が異なるため、両方を参考にしてください。</div></div>';
+    }
+  }
+
+  const wComment = (!ctx.loading && ctx.wind) ? windComment(ctx.wind.speed) : '';
+  const waComment = (!ctx.loading && ctx.wave != null) ? waveComment(ctx.wave) : '';
+
+  el.innerHTML = bannerHtml +
     '<div class="card">' +
       '<div class="row"><h2>🌤️ ' + area.name + ' の今</h2><button class="btn-refresh" id="refreshBtn">🔄更新</button></div>' +
       '<div class="stat-grid">' +
@@ -705,13 +825,21 @@ function renderHome() {
         '<div class="stat"><div class="v">' + windHtml + '</div><div class="l">風向・風速</div></div>' +
         '<div class="stat"><div class="v">' + waveHtml + '</div><div class="l">波の高さ</div></div>' +
       '</div>' +
-      '<div class="row" style="margin-top:8px;"><span class="badge badge-moon">🌙 本日は' + ctx.moonLabel + '</span>' +
+      (wComment ? '<div class="comment-line">' + wComment + '</div>' : '') +
+      (waComment ? '<div class="comment-line">' + waComment + '</div>' : '') +
+      jmaCompareHtml +
+      '<div class="row" style="margin-top:12px;"><span class="badge badge-moon">🌙 本日は' + ctx.moonLabel + '</span>' +
       (tsLabel ? '<span class="muted">' + tsLabel + '</span>' : '') + '</div>' +
       chart +
-      '<div class="disclaimer">※潮汐は気象庁公開の那覇標準港調和定数を基にした簡易計算の目安です。実測値ではありません。風・波はOpen-Meteoの無料データです。</div>' +
+      '<div class="disclaimer">※潮汐は気象庁公開の那覇標準港調和定数を基にした簡易計算の目安です。実測値ではありません。風・波はOpen-Meteoの無料データ、警報注意報・地方海上予報は気象庁の公開データ（定期更新のスナップショット）です。</div>' +
     '</div>';
   const btn = document.getElementById('refreshBtn');
   if (btn) btn.addEventListener('click', function () { refreshArea(state.area); });
+}
+function fmtJmaFetched(iso) {
+  if (!iso) return '不明';
+  const d = new Date(iso);
+  return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + fmt(d);
 }
 
 /* ==================== RENDER: POINTS ==================== */
@@ -738,11 +866,17 @@ function renderPoints() {
     else if (item.score >= 5) badges += '<span class="badge badge-good">🎉本命チャンス！</span> ';
     if (item.timing.badge) badges += '<span class="badge badge-moon">' + item.timing.badge + '</span> ';
     const reasonLine = item.reasons.length ? item.reasons.join('・') : (p.tideAffinity === 'any' ? '潮を問わず楽しめる' : '');
+    const pct = scoreToPercent(item.score);
+    const expanded = state.expandedPoints.has(p.name);
+    const pointKey = encodeURIComponent(p.name);
     return '<div class="point-card">' +
       '<div class="row"><div><span class="rank">' + (idx != null ? medals[idx] || '' : '') + '</span><span class="name">' + p.name + '</span></div><span class="muni">' + p.muni + '</span></div>' +
       (badges ? '<div class="tags">' + badges + '</div>' : '') +
       '<div class="timing">🎣 ' + item.timing.text + '</div>' +
       '<div class="advice">' + genericAdvice(p) + (reasonLine ? '（' + reasonLine + '）' : '') + '</div>' +
+      '<div class="expect-badge">🎯 本日の釣果期待度 <b>' + pct + '%</b></div>' +
+      '<button class="hotspot-toggle" data-point="' + pointKey + '">' + (expanded ? '🔍 詳細を閉じる ▲' : '🔍 この釣り場のもっと詳しい狙い目を見る ▼') + '</button>' +
+      (expanded ? '<div class="hotspot-detail">' + hotspotTip(p) + '</div>' : '') +
       '</div>';
   }
 
@@ -763,9 +897,48 @@ function renderPoints() {
   el.innerHTML = html;
   const t = document.getElementById('toggleAllBtn');
   if (t) t.addEventListener('click', function () { state.showAllPoints = !state.showAllPoints; renderPoints(); });
+  el.querySelectorAll('.hotspot-toggle').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const key = decodeURIComponent(btn.getAttribute('data-point'));
+      if (state.expandedPoints.has(key)) state.expandedPoints.delete(key); else state.expandedPoints.add(key);
+      renderPoints();
+    });
+  });
 }
 
 /* ==================== RENDER: FISH ==================== */
+function tideOnlyScore(point, ctx) {
+  return scorePoint(point, { tideState: ctx.tideState }).score;
+}
+function renderFishAreaMatches(fish) {
+  const ctx = getCtx();
+  let body = '';
+  let any = false;
+  AREAS.forEach(function (area) {
+    const pts = POINTS.filter(function (p) { return p.areaId === area.id && matchesFish(p, fish.key); });
+    if (!pts.length) return;
+    any = true;
+    const scored = pts.map(function (p) { return { point: p, score: tideOnlyScore(p, ctx), timing: resolveTiming(p, ctx) }; });
+    scored.sort(function (a, b) { return b.score - a.score; });
+    const top = scored.slice(0, 3);
+    body += '<div class="fish-area-heading">📍 ' + area.name + '</div><div class="points-grid">';
+    top.forEach(function (item) {
+      const p = item.point;
+      body += '<div class="point-card">' +
+        '<div class="row"><span class="name">' + p.name + '</span><span class="muni">' + p.muni + '</span></div>' +
+        (p.niche ? '<div class="tags"><span class="badge badge-niche">穴場</span></div>' : '') +
+        '<div class="timing">🎣 ' + item.timing.text + '</div>' +
+        '<div class="advice">' + genericAdvice(p) + '</div>' +
+        '<div class="expect-badge">🎯 釣果期待度 <b>' + scoreToPercent(item.score) + '%</b></div>' +
+        '</div>';
+    });
+    body += '</div>';
+  });
+  if (!any) return '';
+  return '<div class="card"><h2>📍 ' + fish.name + ' が狙えるポイント（全エリア）</h2>' +
+    '<div class="muted" style="margin-bottom:6px;">魚種の特性と現在の潮まわりから相性の良いポイントをエリアごとにピックアップしました。風・波の状況は各エリアのホーム画面で確認してください。</div>' +
+    body + '</div>';
+}
 function renderFish() {
   const el = document.getElementById('tab-fish');
   let grid = '<div class="card"><h2>🐟 狙いの魚を選ぶ</h2><div class="fish-grid">';
@@ -776,6 +949,7 @@ function renderFish() {
   grid += '</div></div>';
 
   let detail = '';
+  let areaMatches = '';
   if (state.activeFish) {
     const f = FISH_DB.find(function (x) { return x.key === state.activeFish; });
     const rigSvg = RIG_BUILDERS[f.rigType] ? RIG_BUILDERS[f.rigType]() : '';
@@ -790,8 +964,9 @@ function renderFish() {
       '<div style="margin-top:8px;"><b>餌：</b>' + f.bait + '</div>' +
       '<div style="margin-top:8px;"><b>狙い目：</b>' + f.timing + '</div>' +
       '</div>';
+    areaMatches = renderFishAreaMatches(f);
   }
-  el.innerHTML = grid + detail;
+  el.innerHTML = grid + detail + areaMatches;
   el.querySelectorAll('.fish-btn').forEach(function (btn) {
     btn.addEventListener('click', function () { state.activeFish = btn.getAttribute('data-fish'); renderFish(); });
   });
@@ -876,6 +1051,7 @@ function init() {
     b.addEventListener('click', function () { switchTab(b.getAttribute('data-tab')); });
   });
   refreshArea(state.area);
+  fetchJmaData();
   renderFish();
   renderLog();
   document.addEventListener('click', function (e) {
