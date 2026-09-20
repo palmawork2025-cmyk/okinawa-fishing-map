@@ -111,6 +111,12 @@
   .jma-compare .jc-label{color:var(--cyan-bright); font-weight:700; margin-right:4px;}
   .comment-line{margin-top:10px; font-size:14px; line-height:1.6; padding:10px 12px; background:var(--sand); border-radius:10px; border:1px solid var(--sand-dark);}
   .expect-badge{display:inline-flex; align-items:center; gap:6px; background:rgba(34,211,238,0.1); border:1px solid rgba(34,211,238,0.4); border-radius:8px; padding:6px 12px; font-size:14px; font-weight:700; color:var(--cyan-bright); margin-top:10px;}
+  .target-fish{margin-top:10px;}
+  .target-fish .tf-label{display:block; font-size:12.5px; font-weight:800; color:var(--ink-soft); margin-bottom:6px; letter-spacing:0.02em;}
+  .tf-chips{display:flex; flex-wrap:wrap; gap:6px;}
+  .tf-chip{display:inline-flex; flex-direction:column; background:rgba(255,61,129,0.08); border:1px solid rgba(255,61,129,0.35); border-radius:8px; padding:5px 10px; font-size:12.5px; font-weight:700; color:var(--coral-dark); cursor:pointer; line-height:1.4;}
+  .tf-chip:hover{background:rgba(255,61,129,0.18);}
+  .tf-chip i{font-style:normal; font-size:11px; font-weight:600; color:var(--ink-soft);}
   .expect-badge b{font-size:17px; font-family:"SFMono-Regular",Consolas,"Roboto Mono",monospace;}
   .hotspot-toggle{margin-top:10px; background:none; border:1px dashed var(--sand-dark); color:var(--ink-soft); border-radius:8px; padding:7px 12px; font-size:12.5px; font-weight:700; cursor:pointer; width:100%; text-align:left;}
   .hotspot-toggle:hover{border-color:var(--cyan);}
@@ -374,7 +380,10 @@ const SAMPLE_CATCHES = [
   { id: 'seed-47', date: '2026-03-29', area: 'north_e', place: '安田漁港', fish: 'タマン（ハマフエフキ）', memo: '上げ潮の朝まずめで本命' },
 ];
 
-/* ==================== TIDE (simplified harmonic model, approximate) ==================== */
+/* ==================== TIDE ====================
+ * 気象庁の公式潮位表（那覇、毎時潮位、CORS対応の公開テキストファイル）をライブ取得し、
+ * 時刻間はコサイン補間して滑らかにする。取得前・取得失敗時のみ簡易調和モデルにフォールバックする。
+ */
 const TIDE_EPOCH = Date.UTC(2000, 0, 1, 0, 0, 0);
 const Z0 = 150;
 const CONSTITUENTS = [
@@ -387,7 +396,7 @@ const CONSTITUENTS = [
   { name: 'P1', speed: 14.9589314, amp: 8.1, phase: 251 },
   { name: 'Q1', speed: 13.3986609, amp: 3.9, phase: 227 },
 ];
-function tideHeightCm(date) {
+function tideHeightCmApprox(date) {
   const hours = (date.getTime() - TIDE_EPOCH) / 3600000;
   let h = Z0;
   for (const c of CONSTITUENTS) {
@@ -396,6 +405,70 @@ function tideHeightCm(date) {
   }
   return h;
 }
+function dateKey(y, m, d) { return y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0'); }
+function parseJmaTideYear(text, year) {
+  const map = new Map();
+  const lines = text.split(/\r?\n/).filter(function (l) { return l.length >= 80; });
+  lines.forEach(function (line) {
+    const hourly = [];
+    for (let i = 0; i < 24; i++) {
+      const v = parseInt(line.slice(i * 3, i * 3 + 3), 10);
+      hourly.push(isNaN(v) ? null : v);
+    }
+    if (hourly.some(function (v) { return v == null; })) return;
+    const mm = parseInt(line.slice(74, 76), 10);
+    const dd = parseInt(line.slice(76, 78), 10);
+    if (!mm || !dd) return;
+    map.set(dateKey(year, mm, dd), hourly);
+  });
+  return map;
+}
+async function fetchTideYear(year) {
+  try {
+    const res = await fetch('https://www.data.jma.go.jp/kaiyou/data/db/tide/suisan/txt/' + year + '/NH.txt', { cache: 'no-store' });
+    if (!res.ok) throw new Error('tide fetch failed: ' + res.status);
+    const text = await res.text();
+    state.tideYearData[year] = parseJmaTideYear(text, year);
+  } catch (e) {
+    // 取得失敗時はその年のデータなし → tideHeightCmが自動でフォールバックする
+  }
+}
+async function loadTideData() {
+  const now = new Date();
+  const years = [now.getFullYear()];
+  if (now.getMonth() === 11) years.push(now.getFullYear() + 1); // 年末は翌年分も先読み
+  await Promise.all(years.map(fetchTideYear));
+  state.tideDataLoaded = true;
+  refreshCtxViews();
+}
+function tideHeightFromJmaTable(date) {
+  const year = date.getFullYear();
+  const map = state.tideYearData[year];
+  if (!map) return null;
+  const key = dateKey(year, date.getMonth() + 1, date.getDate());
+  const hours = map.get(key);
+  if (!hours) return null;
+  const h = date.getHours();
+  const frac = (date.getMinutes() * 60 + date.getSeconds()) / 3600;
+  const v0 = hours[h];
+  let v1;
+  if (h === 23) {
+    const nd = new Date(date.getTime() + 3600000 * (24 - h));
+    const nMap = state.tideYearData[nd.getFullYear()];
+    const nHours = nMap ? nMap.get(dateKey(nd.getFullYear(), nd.getMonth() + 1, nd.getDate())) : null;
+    v1 = nHours ? nHours[0] : v0;
+  } else {
+    v1 = hours[h + 1];
+  }
+  if (v0 == null || v1 == null) return null;
+  const mu = (1 - Math.cos(frac * Math.PI)) / 2; // コサイン補間で滑らかに
+  return v0 * (1 - mu) + v1 * mu;
+}
+function tideHeightCm(date) {
+  const real = tideHeightFromJmaTable(date);
+  return real != null ? real : tideHeightCmApprox(date);
+}
+function isUsingRealTideData(date) { return tideHeightFromJmaTable(date) != null; }
 function buildTideTimeline(baseDate) {
   const start = new Date(baseDate);
   start.setHours(0, 0, 0, 0);
@@ -645,6 +718,10 @@ function matchesFish(point, fishKey) {
   const types = FISH_TYPE_MATCH[fishKey] || [];
   return types.indexOf(point.type) !== -1;
 }
+// このポイントの地形タイプで狙える魚をFISH_DBから全て抽出する（該当する分は全部返す）。
+function fishesForPoint(point) {
+  return FISH_DB.filter(function (f) { return matchesFish(point, f.key); });
+}
 // 風・波の数値に対する一言コメント（初心者向けにワクワク／注意をワンフレーズで伝える）
 function windComment(speed) {
   if (speed == null) return '';
@@ -865,7 +942,7 @@ function todayDateStr() {
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
-const state = { area: 'naha', cache: {}, activeTab: 'home', showAllPoints: false, activeFish: null, jma: null, jmaLoaded: false, jmaLoading: false, jmaError: false, expandedPoints: new Set(), planDate: todayDateStr(), planHour: 'now' };
+const state = { area: 'naha', cache: {}, activeTab: 'home', showAllPoints: false, activeFish: null, jma: null, jmaLoaded: false, jmaLoading: false, jmaError: false, expandedPoints: new Set(), planDate: todayDateStr(), planHour: 'now', tideYearData: {}, tideDataLoaded: false };
 function getTargetDateTime() {
   const parts = state.planDate.split('-').map(Number);
   const y = parts[0], m = parts[1], d = parts[2];
@@ -1180,6 +1257,10 @@ function renderHome() {
 
   const wComment = (!ctx.loading && ctx.wind) ? windComment(ctx.wind.speed) : '';
   const waComment = (!ctx.loading && ctx.wave != null) ? waveComment(ctx.wave) : '';
+  const usingRealTide = isUsingRealTideData(ctx.now);
+  const tideSourceBadge = usingRealTide
+    ? '<span class="badge" style="background:rgba(0,230,160,0.15); color:var(--good); border:1px solid rgba(0,230,160,0.5);">✅ 気象庁公式潮位表</span>'
+    : '<span class="badge badge-warn">⚠️ 簡易推定値（公式データ未取得）</span>';
 
   el.innerHTML = bannerHtml +
     '<div class="card">' +
@@ -1192,10 +1273,11 @@ function renderHome() {
       (wComment ? '<div class="comment-line">' + wComment + '</div>' : '') +
       (waComment ? '<div class="comment-line">' + waComment + '</div>' : '') +
       jmaCompareHtml +
-      '<div class="row" style="margin-top:12px;"><span class="badge badge-moon">🌙 ' + (dOff === 0 ? '本日は' : 'この日は') + ctx.moonLabel + '</span>' +
+      '<div class="row" style="margin-top:12px;">' + tideSourceBadge +
+      '<span class="badge badge-moon">🌙 ' + (dOff === 0 ? '本日は' : 'この日は') + ctx.moonLabel + '</span>' +
       (tsLabel ? '<span class="muted">' + tsLabel + '</span>' : '') + '</div>' +
       chart +
-      '<div class="disclaimer">※潮汐は気象庁公開の那覇標準港調和定数を基にした簡易計算の目安です。実測値ではありません。風・波はOpen-Meteoの無料データ、警報注意報・地方海上予報は気象庁の公開APIから直接ライブ取得しています。</div>' +
+      '<div class="disclaimer">※潮汐は気象庁の公式潮位表（那覇、毎時潮位を滑らかに補間）をライブ取得して表示しています。那覇を基準とした代表値のため、実際の釣り場では数十分程度前後する場合があります。取得できない場合のみ簡易推定値（調和計算）にフォールバックします。風・波はOpen-Meteoの無料データ、警報注意報・地方海上予報は気象庁の公開APIから直接ライブ取得しています。</div>' +
     '</div>' +
     buildHomePointsPreview(ctx, area) +
     windyEmbedHtml(area) +
@@ -1262,11 +1344,20 @@ function buildPointCard(item, idx) {
   const pct = scoreToPercent(item.score);
   const expanded = state.expandedPoints.has(p.name);
   const pointKey = encodeURIComponent(p.name);
+  const fishList = fishesForPoint(p);
+  let fishHtml = '';
+  if (fishList.length) {
+    fishHtml = '<div class="target-fish"><span class="tf-label">🐟 狙える魚と釣り方（' + fishList.length + '種）</span><div class="tf-chips">' +
+      fishList.map(function (f) {
+        return '<span class="tf-chip" data-fish="' + f.key + '">' + f.name + '<i>' + f.rig + '</i></span>';
+      }).join('') + '</div></div>';
+  }
   return '<div class="point-card">' +
     '<div class="row"><div><span class="rank">' + (idx != null ? MEDALS[idx] || '' : '') + '</span><span class="name">' + p.name + '</span></div><span class="muni">' + p.muni + '</span></div>' +
     (badges ? '<div class="tags">' + badges + '</div>' : '') +
     '<div class="timing">🎣 ' + item.timing.text + '</div>' +
     '<div class="advice">' + genericAdvice(p) + (reasonLine ? '（' + reasonLine + '）' : '') + '</div>' +
+    fishHtml +
     '<div class="expect-badge">🎯 釣果期待度 <b>' + pct + '%</b></div>' +
     '<button class="hotspot-toggle" data-point="' + pointKey + '">' + (expanded ? '🔍 詳細を閉じる ▲' : '🔍 この釣り場のもっと詳しい狙い目＆地図を見る ▼') + '</button>' +
     (expanded ? '<div class="hotspot-detail">' + hotspotTip(p) + '</div>' + mapEmbedHtml(p) : '') +
@@ -1279,6 +1370,13 @@ function wireHotspotToggles(rootEl, rerender) {
       const key = decodeURIComponent(btn.getAttribute('data-point'));
       if (state.expandedPoints.has(key)) state.expandedPoints.delete(key); else state.expandedPoints.add(key);
       rerender();
+    });
+  });
+  rootEl.querySelectorAll('.tf-chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      state.activeFish = chip.getAttribute('data-fish');
+      switchTab('fish');
+      renderFish();
     });
   });
 }
@@ -1515,6 +1613,7 @@ function init() {
   renderPlanBar();
   refreshArea(state.area);
   fetchJmaData();
+  loadTideData();
   renderFish();
   renderLog();
   document.addEventListener('click', function (e) {
