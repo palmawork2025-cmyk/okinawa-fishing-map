@@ -70,6 +70,16 @@
   }
   .area-chip.active{background:linear-gradient(120deg,var(--cyan-dim),var(--cyan)); border-color:var(--cyan); color:#04222a; box-shadow:0 0 16px rgba(34,211,238,0.45);}
   .area-chip:hover:not(.active){border-color:var(--cyan); color:var(--cyan-bright);}
+  .plan-bar{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 32px 4px; max-width:1120px; margin:0 auto;
+  }
+  .plan-bar .plan-label{font-size:13.5px; font-weight:700; color:var(--ink-soft);}
+  .plan-bar select{
+    background:var(--panel); color:var(--ink); border:1px solid var(--sand-dark); border-radius:8px; padding:8px 12px;
+    font-size:14px; font-weight:600; cursor:pointer; backdrop-filter:blur(6px);
+  }
+  .plan-bar select:focus{outline:none; border-color:var(--cyan);}
+  .plan-bar .plan-live{font-size:12px; color:var(--good); font-weight:700;}
   main{padding:20px 32px 56px; max-width:1120px; margin:0 auto;}
   .tab-content{display:none;}
   .tab-content.active{display:block;}
@@ -179,6 +189,7 @@
   </nav>
 
   <div class="area-tabs" id="areaTabs"></div>
+  <div class="plan-bar" id="planBar"></div>
 
   <main>
     <section id="tab-home" class="tab-content active"></section>
@@ -265,6 +276,10 @@ const FISH_DB = [
   { key: 'taman', name: 'タマン（ハマフエフキ）', rig: 'ぶっこみ仕掛け（置き竿）', bait: 'カニ・エビ', timing: '夜間、砂地混じりの堤防', rigType: 'bukkomi_oki', terms: ['ぶっこみ仕掛け','置き竿'] },
   { key: 'gara', name: 'ガーラ（ロウニンアジ幼魚）', rig: 'ぶっこみ仕掛け（泳がせ）', bait: '活き餌（グルクンなど小魚）', timing: '夜間〜早朝、干瀬際、夏〜秋', rigType: 'bukkomi_oyogase', terms: ['ぶっこみ仕掛け','泳がせ'] },
   { key: 'tachiuo', name: 'タチウオ', rig: '飲ませ釣り・ウキ流し仕掛け', bait: '活きアジ・キビナゴ', timing: '秋〜冬、夜間、漁港内', rigType: 'nomase', terms: ['飲ませ釣り','ウキ流し仕掛け'] },
+  { key: 'kisu', name: 'シロギス（キス）', rig: 'ちょい投げ仕掛け', bait: 'アオイソメ・ジャリメ', timing: '日中、干潟・砂浜、夏〜秋。天ぷらで人気の定番食材', rigType: 'choinage', terms: ['ちょい投げ仕掛け'] },
+  { key: 'aigo', name: 'アイゴ（方言名：エーグヮー）', rig: 'ウキ釣り仕掛け', bait: 'オキアミ・アオサ', timing: '朝夕、堤防・磯、年中。背びれ等のトゲに毒があるので素手で触らないよう注意', rigType: 'ukizuri', terms: ['ウキ釣り仕掛け'] },
+  { key: 'kurodai', name: 'クロダイ（方言名：チン）', rig: 'フカセ釣り仕掛け', bait: 'オキアミ・カニ', timing: '早朝・夕方、堤防際や河口、年中。引き味も良く人気の食材', rigType: 'ukizuri', terms: ['フカセ釣り'] },
+  { key: 'ojisan', name: 'オジサン（ヒメジ類）', rig: 'ちょい投げ・胴突き仕掛け', bait: 'イソメ類・オキアミ', timing: '日中〜夕方、砂地混じりの堤防・浜、年中。だしが出て煮付けや唐揚げに人気', rigType: 'choinage', terms: ['ちょい投げ仕掛け'] },
 ];
 
 const GLOSSARY = {
@@ -277,12 +292,32 @@ const GLOSSARY = {
   '泳がせ': '生きた小魚を餌にして大型魚を誘う釣り方。',
   '飲ませ釣り': '生きた魚を丸ごと使って大物を狙う釣り方（泳がせ釣りとほぼ同義）。',
   'ウキ流し仕掛け': 'ウキを付けて仕掛けを潮の流れに乗せ、自然に漂わせる釣り方。',
+  'ちょい投げ仕掛け': '軽いオモリと短いハリスの針を組み合わせ、砂地に軽く投げ入れて広く探る手軽な釣り方。',
+  'ウキ釣り仕掛け': 'ウキで仕掛けの深さを一定に保ちながら、アタリを目で見て楽しむ基本の釣り方。',
+  'フカセ釣り': '仕掛けを軽くして撒き餌と一緒に自然に沈めながら魚を誘う釣り方。円錐ウキを使うことが多い。',
 };
 
 const SAMPLE_CATCHES = [
-  { id: 'seed-1', date: '2026-08-02', area: 'naha', place: '三重城漁港', fish: 'グルクン（タカサゴ）', memo: '朝まずめサビキで爆釣' },
+  { id: 'seed-1', date: '2026-08-02', area: 'naha', place: '三重城漁港', fish: 'グルクン（タカサゴ）', memo: '朝まずめサビキで爆釣、20匹以上' },
   { id: 'seed-2', date: '2026-08-10', area: 'chubu_e', place: '泡瀬干潟', fish: 'ミーバイ（ハタ類）', memo: '干潮の立ち込みで発見' },
   { id: 'seed-3', date: '2026-08-18', area: 'north_w', place: '古宇利漁港', fish: 'タチウオ', memo: '夜釣りで1本' },
+  { id: 'seed-4', date: '2026-04-05', area: 'chubu_e', place: '泡瀬干潟', fish: 'シロギス（キス）', memo: '大潮の干潮でちょい投げ、型は小さめだが数釣れた' },
+  { id: 'seed-5', date: '2026-04-19', area: 'naha', place: '西崎一文字', fish: 'アイゴ（方言名：エーグヮー）', memo: '夕まずめウキ釣り。トゲに注意しつつクーラーへ' },
+  { id: 'seed-6', date: '2026-05-03', area: 'north_e', place: '宜名真漁港', fish: 'タマン（ハマフエフキ）', memo: '上げ潮の朝まずめ、置き竿にがっつりアタリ' },
+  { id: 'seed-7', date: '2026-05-17', area: 'chubu_w', place: '都屋漁港', fish: 'ミーバイ（ハタ類）', memo: '常夜灯まわりの落とし込みで良型' },
+  { id: 'seed-8', date: '2026-05-28', area: 'naha', place: '奥武島漁港', fish: 'オジサン（ヒメジ類）', memo: '干潮〜上げ始めの胴突きで数尾、唐揚げにして美味しかった' },
+  { id: 'seed-9', date: '2026-06-07', area: 'chubu_e', place: '伊計防波堤', fish: 'タマン（ハマフエフキ）', memo: '大潮の夜、置き竿でヒット。引きが強かった' },
+  { id: 'seed-10', date: '2026-06-14', area: 'naha', place: '三重城漁港', fish: 'クロダイ（方言名：チン）', memo: '堤防際をフカセで攻めて本命' },
+  { id: 'seed-11', date: '2026-06-21', area: 'north_w', place: 'チグヌ浜', fish: 'アイゴ（方言名：エーグヮー）', memo: '満潮前後、道路沿いのウキ釣りで複数尾' },
+  { id: 'seed-12', date: '2026-07-05', area: 'chubu_e', place: '石川漁港', fish: 'グルクン（タカサゴ）', memo: '朝サビキで回遊にヒット' },
+  { id: 'seed-13', date: '2026-07-12', area: 'naha', place: '知念漁港', fish: 'イラブチャー（アオブダイ）', memo: '日中ぶっこみでリーフ際を攻めた' },
+  { id: 'seed-14', date: '2026-07-20', area: 'north_e', place: '川田漁港', fish: 'グルクン（タカサゴ）', memo: '夕方サビキ、型は小さいが数釣れ' },
+  { id: 'seed-15', date: '2026-07-27', area: 'naha', place: '与那原マリーナ', fish: 'タチウオ', memo: '内海の常夜灯でウキ流し、良型2本' },
+  { id: 'seed-16', date: '2026-08-09', area: 'chubu_w', place: '西洲防波堤', fish: 'シロギス（キス）', memo: '日中ちょい投げでポツポツ' },
+  { id: 'seed-17', date: '2026-08-16', area: 'north_w', place: '本部新港', fish: 'ガーラ（ロウニンアジ幼魚）', memo: '早朝、活き餌の泳がせで強烈な引き' },
+  { id: 'seed-18', date: '2026-08-23', area: 'naha', place: '志喜屋漁港', fish: 'タマン（ハマフエフキ）', memo: '砂地混じりの堤防で夜のぶっこみが的中' },
+  { id: 'seed-19', date: '2026-09-06', area: 'chubu_e', place: '海中道路周辺', fish: 'アイゴ（方言名：エーグヮー）', memo: '堤防のウキ釣りで数尾、刺身は避けて味噌汁に' },
+  { id: 'seed-20', date: '2026-09-13', area: 'north_e', place: '安田漁港', fish: 'クロダイ（方言名：チン）', memo: '早朝フカセで良型、引き味最高' },
 ];
 
 /* ==================== TIDE (simplified harmonic model, approximate) ==================== */
@@ -534,6 +569,10 @@ const FISH_TYPE_MATCH = {
   taman: ['堤防', '漁港', '浜'],
   gara: ['磯', '堤防', '浜'],
   tachiuo: ['漁港', 'マリーナ'],
+  kisu: ['干潟', '浜'],
+  aigo: ['堤防', '磯', '漁港'],
+  kurodai: ['堤防', '漁港', '磯'],
+  ojisan: ['干潟', '浜', '堤防'],
 };
 function matchesFish(point, fishKey) {
   const types = FISH_TYPE_MATCH[fishKey] || [];
@@ -641,11 +680,65 @@ const RIG_BUILDERS = {
       labelTag(102, 205, '孫針+活きアジ', '#FF6FA0') +
       '<text x="20" y="250" font-size="11" fill="#CFEFF6">ウキを潮に流して漂わせる</text>'
     );
+  },
+  choinage: function () {
+    return svgFrame(
+      '<line x1="55" y1="10" x2="100" y2="150" stroke="#DCEFF5" stroke-width="1.5"/>' +
+      partSinker(100, 148, 12) +
+      '<line x1="100" y1="162" x2="70" y2="195" stroke="#DCEFF5" stroke-width="1.1"/>' +
+      '<line x1="100" y1="162" x2="130" y2="220" stroke="#DCEFF5" stroke-width="1.1"/>' +
+      partHook(68, 197) + partHook(128, 222) +
+      labelTag(112, 148, '天秤オモリ(軽め)', '#C98B4A') +
+      labelTag(10, 205, '針+イソメ', '#FF6FA0') +
+      labelTag(112, 232, '針+イソメ', '#FF6FA0') +
+      '<text x="20" y="260" font-size="11" fill="#CFEFF6">ウキ：使わず軽く投げて</text>' +
+      '<text x="20" y="277" font-size="11" fill="#CFEFF6">砂地をゆっくり探る</text>'
+    );
+  },
+  ukizuri: function () {
+    return svgFrame(
+      '<line x1="55" y1="10" x2="85" y2="80" stroke="#DCEFF5" stroke-width="1.5"/>' +
+      partFloat(87, 96, 12) +
+      '<line x1="87" y1="110" x2="95" y2="190" stroke="#DCEFF5" stroke-width="1.3"/>' +
+      partSinker(95, 175, 8) + partHook(93, 192) +
+      labelTag(102, 96, '円錐ウキ', '#22D3EE') +
+      labelTag(102, 175, 'ガン玉', '#C98B4A') +
+      labelTag(102, 195, '針+餌', '#FF6FA0') +
+      '<text x="20" y="230" font-size="11" fill="#CFEFF6">ウキ下のタナを調整して</text>' +
+      '<text x="20" y="247" font-size="11" fill="#CFEFF6">自然に流す</text>'
+    );
   }
 };
 
 /* ==================== STATE ==================== */
-const state = { area: 'naha', cache: {}, activeTab: 'home', showAllPoints: false, activeFish: null, jma: null, jmaLoaded: false, expandedPoints: new Set() };
+function todayDateStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+const state = { area: 'naha', cache: {}, activeTab: 'home', showAllPoints: false, activeFish: null, jma: null, jmaLoaded: false, expandedPoints: new Set(), planDate: todayDateStr(), planHour: 'now' };
+function getTargetDateTime() {
+  const parts = state.planDate.split('-').map(Number);
+  const y = parts[0], m = parts[1], d = parts[2];
+  if (state.planHour === 'now' && state.planDate === todayDateStr()) return new Date();
+  const hour = state.planHour === 'now' ? new Date().getHours() : Number(state.planHour);
+  return new Date(y, m - 1, d, hour, 0, 0, 0);
+}
+function isViewingLiveNow() { return state.planDate === todayDateStr() && state.planHour === 'now'; }
+function sameCalendarDate(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+function dayOffsetFromToday(date) {
+  const t0 = new Date(); t0.setHours(0, 0, 0, 0);
+  const t1 = new Date(date); t1.setHours(0, 0, 0, 0);
+  return Math.round((t1 - t0) / 86400000);
+}
+function pickHourlyIndex(times, target) {
+  if (!times || !times.length) return null;
+  let best = -1, bestDiff = Infinity;
+  for (let i = 0; i < times.length; i++) {
+    const diff = Math.abs(times[i].getTime() - target.getTime());
+    if (diff < bestDiff) { bestDiff = diff; best = i; }
+  }
+  return best;
+}
 
 /* ==================== JMA (気象庁 地方海上予報・警報注意報) ==================== */
 // 同一オリジンの静的スナップショット（jma-data.json）を読み込む。ライブAPIではなく、
@@ -663,32 +756,40 @@ async function fetchJmaData() {
 }
 
 /* ==================== API ==================== */
+// 7日分の時間別データを丸ごと取得しておき、日付・時刻の選択に応じて後から該当インデックスを拾う。
 async function fetchAreaData(area) {
   const wUrl = 'https://api.open-meteo.com/v1/forecast?latitude=' + area.lat + '&longitude=' + area.lon +
-    '&current=wind_speed_10m,wind_direction_10m,temperature_2m&daily=sunrise,sunset&timezone=Asia%2FTokyo&forecast_days=1&wind_speed_unit=ms';
+    '&hourly=wind_speed_10m,wind_direction_10m,temperature_2m&daily=sunrise,sunset&timezone=Asia%2FTokyo&forecast_days=7&wind_speed_unit=ms';
   const mUrl = 'https://marine-api.open-meteo.com/v1/marine?latitude=' + area.lat + '&longitude=' + area.lon +
-    '&hourly=wave_height,wave_period&timezone=Asia%2FTokyo&forecast_days=1';
-  const result = { wind: null, wave: null, wavePeriod: null, sunrise: null, sunset: null, temp: null, weatherError: false, waveError: false };
+    '&hourly=wave_height,wave_period&timezone=Asia%2FTokyo&forecast_days=7';
+  const result = {
+    hourlyTimes: [], windSpeedArr: [], windDirArr: [], tempArr: [],
+    waveTimes: [], waveHeightArr: [], wavePeriodArr: [],
+    dailyDates: [], sunriseArr: [], sunsetArr: [],
+    weatherError: false, waveError: false
+  };
   try {
     const wRes = await fetch(wUrl);
     const wJson = await wRes.json();
-    result.wind = { speed: wJson.current.wind_speed_10m, direction: wJson.current.wind_direction_10m };
-    result.temp = wJson.current.temperature_2m;
-    if (wJson.daily) {
-      result.sunrise = wJson.daily.sunrise && wJson.daily.sunrise[0] ? new Date(wJson.daily.sunrise[0]) : null;
-      result.sunset = wJson.daily.sunset && wJson.daily.sunset[0] ? new Date(wJson.daily.sunset[0]) : null;
+    if (wJson.hourly && wJson.hourly.time) {
+      result.hourlyTimes = wJson.hourly.time.map(function (t) { return new Date(t); });
+      result.windSpeedArr = wJson.hourly.wind_speed_10m || [];
+      result.windDirArr = wJson.hourly.wind_direction_10m || [];
+      result.tempArr = wJson.hourly.temperature_2m || [];
+    }
+    if (wJson.daily && wJson.daily.time) {
+      result.dailyDates = wJson.daily.time.map(function (t) { return new Date(t + 'T00:00:00'); });
+      result.sunriseArr = (wJson.daily.sunrise || []).map(function (t) { return t ? new Date(t) : null; });
+      result.sunsetArr = (wJson.daily.sunset || []).map(function (t) { return t ? new Date(t) : null; });
     }
   } catch (e) { result.weatherError = true; }
   try {
     const mRes = await fetch(mUrl);
     const mJson = await mRes.json();
-    if (mJson.hourly && mJson.hourly.wave_height) {
-      const now = new Date();
-      const times = mJson.hourly.time.map(function (t) { return new Date(t); });
-      let idx = times.findIndex(function (t) { return t >= now; });
-      if (idx < 0) idx = times.length - 1;
-      result.wave = mJson.hourly.wave_height[idx];
-      result.wavePeriod = mJson.hourly.wave_period ? mJson.hourly.wave_period[idx] : null;
+    if (mJson.hourly && mJson.hourly.time) {
+      result.waveTimes = mJson.hourly.time.map(function (t) { return new Date(t); });
+      result.waveHeightArr = mJson.hourly.wave_height || [];
+      result.wavePeriodArr = mJson.hourly.wave_period || [];
     }
   } catch (e) { result.waveError = true; }
   return result;
@@ -760,16 +861,28 @@ function buildTideChartSVG(timeline, extrema, now) {
     '<circle cx="' + nx + '" cy="' + ny + '" r="5" fill="#FF3D81" stroke="#DCEFF5" stroke-width="1.5" filter="url(#tideGlow)"/></svg>';
 }
 function getCtx() {
-  const now = new Date();
+  const now = getTargetDateTime();
+  const isLive = isViewingLiveNow();
   const timeline = buildTideTimeline(now);
   const extrema = findExtrema(timeline);
   const tideState = tideStateNow(now, extrema);
   const moonLabel = moonPhaseLabel(moonAgeDays(now));
   const cache = state.cache[state.area];
   const data = cache && cache.data ? cache.data : null;
-  return { now: now, timeline: timeline, extrema: extrema, tideState: tideState, moonLabel: moonLabel,
-    sunrise: data ? data.sunrise : null, sunset: data ? data.sunset : null,
-    wind: data ? data.wind : null, wave: data ? data.wave : null, wavePeriod: data ? data.wavePeriod : null,
+  let wind = null, wave = null, wavePeriod = null, sunrise = null, sunset = null;
+  if (data) {
+    const wi = pickHourlyIndex(data.hourlyTimes, now);
+    if (wi != null && wi >= 0 && data.windSpeedArr[wi] != null) wind = { speed: data.windSpeedArr[wi], direction: data.windDirArr[wi] };
+    const vi = pickHourlyIndex(data.waveTimes, now);
+    if (vi != null && vi >= 0 && data.waveHeightArr[vi] != null) { wave = data.waveHeightArr[vi]; wavePeriod = data.wavePeriodArr[vi]; }
+    if (data.dailyDates && data.dailyDates.length) {
+      const di = data.dailyDates.findIndex(function (dd) { return sameCalendarDate(dd, now); });
+      if (di >= 0) { sunrise = data.sunriseArr[di]; sunset = data.sunsetArr[di]; }
+    }
+  }
+  return { now: now, isLive: isLive, timeline: timeline, extrema: extrema, tideState: tideState, moonLabel: moonLabel,
+    sunrise: sunrise, sunset: sunset,
+    wind: wind, wave: wave, wavePeriod: wavePeriod,
     weatherError: data ? data.weatherError : false, waveError: data ? data.waveError : false, loading: cache ? cache.loading : true };
 }
 function renderHome() {
@@ -787,12 +900,14 @@ function renderHome() {
   if (!ctx.loading) {
     waveHtml = (ctx.wave != null) ? ctx.wave.toFixed(1) + 'm' : '<span class="muted">データなし</span>';
   }
-  const tsLabel = state.cache[state.area] && state.cache[state.area].ts ? fmt(state.cache[state.area].ts) + '時点' : '';
+  const tsLabel = state.cache[state.area] && state.cache[state.area].ts ? fmt(state.cache[state.area].ts) + '時点取得' : '';
+  const dOff = dayOffsetFromToday(ctx.now);
+  const viewLabel = ctx.isLive ? 'の今' : '（' + (ctx.now.getMonth() + 1) + '/' + ctx.now.getDate() + ' ' + fmt(ctx.now) + ' 時点の予測）';
 
-  // 気象庁 警報注意報（沖縄気象台のスナップショット）
+  // 気象庁 警報注意報（沖縄気象台のスナップショット）— 「現在」を見ている時だけ表示（未来日時の予測には出さない）
   const jmaMeta = JMA_AREA_META[state.area];
   let bannerHtml = '';
-  if (state.jma && state.jma.warningsByArea) {
+  if (dOff === 0 && state.jma && state.jma.warningsByArea) {
     const warns = state.jma.warningsByArea[jmaMeta.warnClass10] || [];
     if (warns.length) {
       const names = warns.map(function (w) { return w.name + (w.additions && w.additions.length ? '（' + w.additions.join('・') + '）' : ''); }).join('、');
@@ -803,15 +918,18 @@ function renderHome() {
     }
   }
 
-  // 気象庁 地方海上予報（沖合参考値）
+  // 気象庁 地方海上予報（沖合参考値）— 今日/明日分のみ気象庁データがあるため、それ以外の日は表示しない
   let jmaCompareHtml = '';
-  if (state.jma && state.jma.marine) {
+  if ((dOff === 0 || dOff === 1) && state.jma && state.jma.marine) {
     const m = state.jma.marine[jmaMeta.marineArea];
-    if (m && m.today) {
-      jmaCompareHtml = '<div class="jma-compare"><span class="jc-label">🛰️ 気象庁 地方海上予報（沖合・今日／' + m.name + '）</span><br>' +
-        '波高: ' + (m.today.wave || 'ー') + '　／　風: ' + (m.today.wind || 'ー') +
+    const period = dOff === 0 ? m && m.today : m && m.tomorrow;
+    if (m && period) {
+      jmaCompareHtml = '<div class="jma-compare"><span class="jc-label">🛰️ 気象庁 地方海上予報（沖合・' + (dOff === 0 ? '今日' : '明日') + '／' + m.name + '）</span><br>' +
+        '波高: ' + (period.wave || 'ー') + '　／　風: ' + (period.wind || 'ー') +
         '<div class="muted" style="margin-top:4px;">※沖合の予報区の値です。上の「波の高さ」（Open-Meteo・沿岸推定）とは対象範囲が異なるため、両方を参考にしてください。</div></div>';
     }
+  } else if (dOff >= 2) {
+    jmaCompareHtml = '<div class="muted" style="margin-top:10px;">気象庁 地方海上予報は今日・明日分のみ提供のため、この日は表示されません。</div>';
   }
 
   const wComment = (!ctx.loading && ctx.wind) ? windComment(ctx.wind.speed) : '';
@@ -819,7 +937,7 @@ function renderHome() {
 
   el.innerHTML = bannerHtml +
     '<div class="card">' +
-      '<div class="row"><h2>🌤️ ' + area.name + ' の今</h2><button class="btn-refresh" id="refreshBtn">🔄更新</button></div>' +
+      '<div class="row"><h2>🌤️ ' + area.name + ' ' + viewLabel + '</h2><button class="btn-refresh" id="refreshBtn">🔄更新</button></div>' +
       '<div class="stat-grid">' +
         '<div class="stat"><div class="v">' + stateLabel + '</div><div class="l">潮の状態</div></div>' +
         '<div class="stat"><div class="v">' + windHtml + '</div><div class="l">風向・風速</div></div>' +
@@ -828,7 +946,7 @@ function renderHome() {
       (wComment ? '<div class="comment-line">' + wComment + '</div>' : '') +
       (waComment ? '<div class="comment-line">' + waComment + '</div>' : '') +
       jmaCompareHtml +
-      '<div class="row" style="margin-top:12px;"><span class="badge badge-moon">🌙 本日は' + ctx.moonLabel + '</span>' +
+      '<div class="row" style="margin-top:12px;"><span class="badge badge-moon">🌙 ' + (dOff === 0 ? '本日は' : 'この日は') + ctx.moonLabel + '</span>' +
       (tsLabel ? '<span class="muted">' + tsLabel + '</span>' : '') + '</div>' +
       chart +
       '<div class="disclaimer">※潮汐は気象庁公開の那覇標準港調和定数を基にした簡易計算の目安です。実測値ではありません。風・波はOpen-Meteoの無料データ、警報注意報・地方海上予報は気象庁の公開データ（定期更新のスナップショット）です。</div>' +
@@ -874,14 +992,15 @@ function renderPoints() {
       (badges ? '<div class="tags">' + badges + '</div>' : '') +
       '<div class="timing">🎣 ' + item.timing.text + '</div>' +
       '<div class="advice">' + genericAdvice(p) + (reasonLine ? '（' + reasonLine + '）' : '') + '</div>' +
-      '<div class="expect-badge">🎯 本日の釣果期待度 <b>' + pct + '%</b></div>' +
+      '<div class="expect-badge">🎯 釣果期待度 <b>' + pct + '%</b></div>' +
       '<button class="hotspot-toggle" data-point="' + pointKey + '">' + (expanded ? '🔍 詳細を閉じる ▲' : '🔍 この釣り場のもっと詳しい狙い目を見る ▼') + '</button>' +
       (expanded ? '<div class="hotspot-detail">' + hotspotTip(p) + '</div>' : '') +
       '</div>';
   }
 
+  const pointsTimeLabel = ctx.isLive ? '現在' : (ctx.now.getMonth() + 1) + '/' + ctx.now.getDate() + '(' + ['日','月','火','水','木','金','土'][ctx.now.getDay()] + ') ' + fmt(ctx.now) + '頃';
   let html = '<div class="card"><h2>🎯 ' + area.name + ' のおすすめポイント</h2>' +
-    '<div class="muted" style="margin-bottom:14px;">潮・風・波のスコアから自動算出した本日のおすすめ順です。</div>' +
+    '<div class="muted" style="margin-bottom:14px;"><b style="color:var(--cyan-bright);">' + pointsTimeLabel + '</b> の潮・風・波のスコアから自動算出したおすすめ順です。上の「表示する日時」を変えると、その時間帯のおすすめに切り替わります。</div>' +
     '<div class="points-grid">';
   top.forEach(function (item, idx) { html += cardHtml(item, idx); });
   html += '</div>';
@@ -1037,6 +1156,51 @@ function setArea(id) {
   document.querySelectorAll('.area-chip').forEach(function (c) { c.classList.toggle('active', c.getAttribute('data-area') === id); });
   if (!state.cache[id]) refreshArea(id); else { renderHome(); renderPoints(); }
 }
+function refreshCtxViews() {
+  renderHome();
+  renderPoints();
+  if (state.activeFish) renderFish();
+}
+function planDateOptions() {
+  const opts = [];
+  const base = new Date(); base.setHours(0, 0, 0, 0);
+  const labels = ['今日', '明日'];
+  const wd = ['日', '月', '火', '水', '木', '金', '土'];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(base.getTime() + i * 86400000);
+    const iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    const label = (d.getMonth() + 1) + '/' + d.getDate() + '(' + wd[d.getDay()] + ')' + (labels[i] ? '・' + labels[i] : '');
+    opts.push({ value: iso, label: label });
+  }
+  return opts;
+}
+function renderPlanBar() {
+  const bar = document.getElementById('planBar');
+  const dateOpts = planDateOptions();
+  const dateHtml = dateOpts.map(function (o) { return '<option value="' + o.value + '"' + (o.value === state.planDate ? ' selected' : '') + '>' + o.label + '</option>'; }).join('');
+  const isToday = state.planDate === todayDateStr();
+  let hourHtml = '';
+  if (isToday) hourHtml += '<option value="now"' + (state.planHour === 'now' ? ' selected' : '') + '>現在（自動）</option>';
+  for (let h = 0; h < 24; h++) {
+    hourHtml += '<option value="' + h + '"' + (String(state.planHour) === String(h) ? ' selected' : '') + '>' + h + '時</option>';
+  }
+  bar.innerHTML =
+    '<span class="plan-label">🗓️ 表示する日時</span>' +
+    '<select id="planDateSelect">' + dateHtml + '</select>' +
+    '<select id="planHourSelect">' + hourHtml + '</select>' +
+    (isViewingLiveNow() ? '<span class="plan-live">● 現在の状況を表示中</span>' : '');
+  document.getElementById('planDateSelect').addEventListener('change', function (e) {
+    state.planDate = e.target.value;
+    if (state.planDate !== todayDateStr() && state.planHour === 'now') state.planHour = new Date().getHours();
+    renderPlanBar();
+    refreshCtxViews();
+  });
+  document.getElementById('planHourSelect').addEventListener('change', function (e) {
+    state.planHour = e.target.value === 'now' ? 'now' : Number(e.target.value);
+    renderPlanBar();
+    refreshCtxViews();
+  });
+}
 function init() {
   const tabsEl = document.getElementById('areaTabs');
   AREAS.forEach(function (a) {
@@ -1050,6 +1214,7 @@ function init() {
   document.querySelectorAll('#bottomnav button').forEach(function (b) {
     b.addEventListener('click', function () { switchTab(b.getAttribute('data-tab')); });
   });
+  renderPlanBar();
   refreshArea(state.area);
   fetchJmaData();
   renderFish();
