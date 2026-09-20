@@ -115,6 +115,11 @@
   .hotspot-toggle{margin-top:10px; background:none; border:1px dashed var(--sand-dark); color:var(--ink-soft); border-radius:8px; padding:7px 12px; font-size:12.5px; font-weight:700; cursor:pointer; width:100%; text-align:left;}
   .hotspot-toggle:hover{border-color:var(--cyan);}
   .hotspot-detail{margin-top:8px; font-size:13.5px; color:var(--ink-soft); line-height:1.6; background:rgba(34,211,238,0.06); border-left:3px solid var(--cyan-dim); padding:10px 12px; border-radius:0 8px 8px 0;}
+  .map-embed-wrap{margin-top:12px;}
+  .map-embed{width:100%; height:220px; border:1px solid var(--sand-dark); border-radius:10px; filter:invert(0.92) hue-rotate(180deg) saturate(1.1);}
+  .map-link{display:inline-block; margin-top:8px; font-size:12.5px; font-weight:700; color:var(--cyan-bright); text-decoration:none; border:1px solid rgba(34,211,238,0.4); border-radius:8px; padding:6px 12px;}
+  .map-link:hover{background:rgba(34,211,238,0.1);}
+  .home-points-preview .point-card{margin-bottom:0;}
   .fish-area-heading{font-size:15px; color:var(--cyan-bright); font-weight:800; margin:18px 0 10px; display:flex; align-items:center; gap:6px;}
   .fish-area-heading:first-of-type{margin-top:4px;}
   .btn-refresh{border:1px solid var(--cyan); background:rgba(34,211,238,0.1); color:var(--cyan-bright); border-radius:8px; padding:9px 18px; font-size:13.5px; font-weight:700; cursor:pointer; transition:all 0.15s;}
@@ -229,48 +234,48 @@ const JMA_AREA_META = {
 };
 
 const POINTS = [
-  { name: '三重城漁港', muni: '那覇市', areaId: 'naha', type: '堤防', tideAffinity: 'any', coastFacing: 'W', timingType: 'asa_yu_mazume', advice: 'サビキ仕掛けでグルクンの回遊を狙う。堤防先端が特におすすめ' },
-  { name: '波の上うみそら公園', muni: '那覇市', areaId: 'naha', type: '堤防', tideAffinity: 'any', coastFacing: 'W' },
-  { name: '西崎一文字', muni: '糸満市', areaId: 'naha', type: '堤防', tideAffinity: 'any', coastFacing: 'W' },
-  { name: '糸満漁港', muni: '糸満市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'W' },
-  { name: '志喜屋漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', timingType: 'yakan', advice: '砂地混じりの堤防でタマンのぶっこみ釣りが効果的' },
-  { name: '安座間漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E' },
-  { name: '海野漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E' },
-  { name: '与那原マリーナ', muni: '与那原町', areaId: 'naha', type: 'マリーナ', tideAffinity: 'any', coastFacing: 'sheltered' },
-  { name: '糸満フィッシャリーナ', muni: '糸満市', areaId: 'naha', type: 'マリーナ', tideAffinity: 'any', coastFacing: 'sheltered', niche: true },
-  { name: '大度浜海岸', muni: '糸満市', areaId: 'naha', type: '磯', tideAffinity: 'aroundHighLow', coastFacing: 'S', niche: true },
-  { name: '知念漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true },
-  { name: '久手堅船溜', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true },
-  { name: '徳仁漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true },
-  { name: '知名崎海岸', muni: '南城市', areaId: 'naha', type: '磯', tideAffinity: 'aroundHighLow', coastFacing: 'E', niche: true },
-  { name: '仲伊保漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true },
-  { name: '当添漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true },
-  { name: '奥武島漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'lowTide', coastFacing: 'E', niche: true, timingType: 'kanchou_agehajime', advice: '護岸が広く足場が安定。地元で人気の穴場で家族連れにも向く' },
-  { name: '馬天港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true },
-  { name: '西原漁港', muni: '西原町', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true },
-  { name: '都屋漁港', muni: '読谷村', areaId: 'chubu_w', type: '漁港', tideAffinity: 'any', coastFacing: 'W', timingType: 'yakan_soucho', advice: '常夜灯まわりでミーバイなどハタ類が狙いやすい' },
-  { name: '真栄田漁港', muni: '恩納村', areaId: 'chubu_w', type: '漁港', tideAffinity: 'any', coastFacing: 'W' },
-  { name: '宜野湾漁港', muni: '宜野湾市', areaId: 'chubu_w', type: '漁港', tideAffinity: 'any', coastFacing: 'sheltered' },
-  { name: '西洲防波堤', muni: '浦添市', areaId: 'chubu_w', type: '堤防', tideAffinity: 'any', coastFacing: 'W' },
-  { name: '泡瀬漁港', muni: '沖縄市', areaId: 'chubu_e', type: '漁港', tideAffinity: 'any', coastFacing: 'E' },
-  { name: '泡瀬干潟', muni: '沖縄市', areaId: 'chubu_e', type: '干潟', tideAffinity: 'lowTide', coastFacing: 'E', timingType: 'kanchou2h', advice: '干潟が現れるタイミングで立ち込み、カーエー・キスが狙いやすい' },
-  { name: '新夢咲公園', muni: '沖縄市', areaId: 'chubu_e', type: '堤防', tideAffinity: 'any', coastFacing: 'E' },
-  { name: '石川漁港', muni: 'うるま市', areaId: 'chubu_e', type: '漁港', tideAffinity: 'any', coastFacing: 'E', timingType: 'seasonal_winter_evening', advice: '水温が下がるこの時期はタチウオの実績が高い' },
-  { name: '海中道路周辺', muni: 'うるま市', areaId: 'chubu_e', type: '堤防', tideAffinity: 'any', coastFacing: 'E' },
-  { name: '伊計防波堤', muni: 'うるま市', areaId: 'chubu_e', type: '堤防', tideAffinity: 'aroundHighLow', coastFacing: 'E', timingType: 'ooshio_yakan', advice: '大型タマンやアオリイカの実績が多いポイント' },
-  { name: '名護漁港', muni: '名護市', areaId: 'north_w', type: '漁港', tideAffinity: 'any', coastFacing: 'W' },
-  { name: '許田漁港', muni: '名護市', areaId: 'north_w', type: '漁港', tideAffinity: 'any', coastFacing: 'E' },
-  { name: '本部新港', muni: '本部町', areaId: 'north_w', type: '漁港', tideAffinity: 'any', coastFacing: 'W' },
-  { name: '塩川湾', muni: '本部町', areaId: 'north_w', type: '干潟', tideAffinity: 'lowTide', coastFacing: 'W' },
-  { name: '浜崎漁港', muni: '本部町', areaId: 'north_w', type: '漁港', tideAffinity: 'any', coastFacing: 'W' },
-  { name: '屋我地漁港', muni: '名護市', areaId: 'north_w', type: '漁港', tideAffinity: 'any', coastFacing: 'sheltered' },
-  { name: '古宇利漁港', muni: '今帰仁村', areaId: 'north_w', type: '漁港', tideAffinity: 'any', coastFacing: 'N' },
-  { name: 'チグヌ浜', muni: '今帰仁村', areaId: 'north_w', type: '浜', tideAffinity: 'aroundHighLow', coastFacing: 'N', niche: true, timingType: 'manchou_zengo', advice: '満潮時は道路からも釣行可能。内海側はイカ狙いのエギングに好条件' },
-  { name: '運天港周辺', muni: '今帰仁村', areaId: 'north_w', type: '漁港', tideAffinity: 'any', coastFacing: 'sheltered' },
-  { name: '安田漁港', muni: '国頭村', areaId: 'north_e', type: '漁港', tideAffinity: 'any', coastFacing: 'E' },
-  { name: '川田漁港', muni: '東村', areaId: 'north_e', type: '漁港', tideAffinity: 'any', coastFacing: 'E' },
-  { name: '慶佐次漁港', muni: '東村', areaId: 'north_e', type: '漁港', tideAffinity: 'any', coastFacing: 'E' },
-  { name: '宜名真漁港', muni: '国頭村', areaId: 'north_e', type: '漁港', tideAffinity: 'rising', coastFacing: 'N', timingType: 'agejio_asa', advice: '辺戸岬に近く、回遊してくる大物にも期待できる' },
+  { name: '三重城漁港', muni: '那覇市', areaId: 'naha', type: '堤防', tideAffinity: 'any', coastFacing: 'W', timingType: 'asa_yu_mazume', advice: 'サビキ仕掛けでグルクンの回遊を狙う。堤防先端が特におすすめ', lat: 26.2095, lon: 127.6712 },
+  { name: '波の上うみそら公園', muni: '那覇市', areaId: 'naha', type: '堤防', tideAffinity: 'any', coastFacing: 'W', lat: 26.2183, lon: 127.6738 },
+  { name: '西崎一文字', muni: '糸満市', areaId: 'naha', type: '堤防', tideAffinity: 'any', coastFacing: 'W', lat: 26.1245, lon: 127.6435 },
+  { name: '糸満漁港', muni: '糸満市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'W', lat: 26.1215, lon: 127.6685 },
+  { name: '志喜屋漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', timingType: 'yakan', advice: '砂地混じりの堤防でタマンのぶっこみ釣りが効果的', lat: 26.1420, lon: 127.7975 },
+  { name: '安座間漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', lat: 26.1520, lon: 127.8080 },
+  { name: '海野漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', lat: 26.1280, lon: 127.7550 },
+  { name: '与那原マリーナ', muni: '与那原町', areaId: 'naha', type: 'マリーナ', tideAffinity: 'any', coastFacing: 'sheltered', lat: 26.2010, lon: 127.7590 },
+  { name: '糸満フィッシャリーナ', muni: '糸満市', areaId: 'naha', type: 'マリーナ', tideAffinity: 'any', coastFacing: 'sheltered', niche: true, lat: 26.1230, lon: 127.6520 },
+  { name: '大度浜海岸', muni: '糸満市', areaId: 'naha', type: '磯', tideAffinity: 'aroundHighLow', coastFacing: 'S', niche: true, lat: 26.0810, lon: 127.6680 },
+  { name: '知念漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.1550, lon: 127.7980 },
+  { name: '久手堅船溜', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.1650, lon: 127.8050 },
+  { name: '徳仁漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.1420, lon: 127.7650 },
+  { name: '知名崎海岸', muni: '南城市', areaId: 'naha', type: '磯', tideAffinity: 'aroundHighLow', coastFacing: 'E', niche: true, lat: 26.1380, lon: 127.7700 },
+  { name: '仲伊保漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.1300, lon: 127.7450 },
+  { name: '当添漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.1850, lon: 127.7700 },
+  { name: '奥武島漁港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'lowTide', coastFacing: 'E', niche: true, timingType: 'kanchou_agehajime', advice: '護岸が広く足場が安定。地元で人気の穴場で家族連れにも向く', lat: 26.1440, lon: 127.7590 },
+  { name: '馬天港', muni: '南城市', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.1780, lon: 127.7620 },
+  { name: '西原漁港', muni: '西原町', areaId: 'naha', type: '漁港', tideAffinity: 'any', coastFacing: 'E', niche: true, lat: 26.2270, lon: 127.7620 },
+  { name: '都屋漁港', muni: '読谷村', areaId: 'chubu_w', type: '漁港', tideAffinity: 'any', coastFacing: 'W', timingType: 'yakan_soucho', advice: '常夜灯まわりでミーバイなどハタ類が狙いやすい', lat: 26.3980, lon: 127.7250 },
+  { name: '真栄田漁港', muni: '恩納村', areaId: 'chubu_w', type: '漁港', tideAffinity: 'any', coastFacing: 'W', lat: 26.4650, lon: 127.7830 },
+  { name: '宜野湾漁港', muni: '宜野湾市', areaId: 'chubu_w', type: '漁港', tideAffinity: 'any', coastFacing: 'sheltered', lat: 26.2950, lon: 127.7480 },
+  { name: '西洲防波堤', muni: '浦添市', areaId: 'chubu_w', type: '堤防', tideAffinity: 'any', coastFacing: 'W', lat: 26.2650, lon: 127.6980 },
+  { name: '泡瀬漁港', muni: '沖縄市', areaId: 'chubu_e', type: '漁港', tideAffinity: 'any', coastFacing: 'E', lat: 26.3350, lon: 127.8500 },
+  { name: '泡瀬干潟', muni: '沖縄市', areaId: 'chubu_e', type: '干潟', tideAffinity: 'lowTide', coastFacing: 'E', timingType: 'kanchou2h', advice: '干潟が現れるタイミングで立ち込み、カーエー・キスが狙いやすい', lat: 26.3400, lon: 127.8550 },
+  { name: '新夢咲公園', muni: '沖縄市', areaId: 'chubu_e', type: '堤防', tideAffinity: 'any', coastFacing: 'E', lat: 26.3300, lon: 127.8450 },
+  { name: '石川漁港', muni: 'うるま市', areaId: 'chubu_e', type: '漁港', tideAffinity: 'any', coastFacing: 'E', timingType: 'seasonal_winter_evening', advice: '水温が下がるこの時期はタチウオの実績が高い', lat: 26.4280, lon: 127.8300 },
+  { name: '海中道路周辺', muni: 'うるま市', areaId: 'chubu_e', type: '堤防', tideAffinity: 'any', coastFacing: 'E', lat: 26.3650, lon: 127.9080 },
+  { name: '伊計防波堤', muni: 'うるま市', areaId: 'chubu_e', type: '堤防', tideAffinity: 'aroundHighLow', coastFacing: 'E', timingType: 'ooshio_yakan', advice: '大型タマンやアオリイカの実績が多いポイント', lat: 26.4050, lon: 127.9750 },
+  { name: '名護漁港', muni: '名護市', areaId: 'north_w', type: '漁港', tideAffinity: 'any', coastFacing: 'W', lat: 26.5920, lon: 127.9780 },
+  { name: '許田漁港', muni: '名護市', areaId: 'north_w', type: '漁港', tideAffinity: 'any', coastFacing: 'E', lat: 26.5620, lon: 128.0080 },
+  { name: '本部新港', muni: '本部町', areaId: 'north_w', type: '漁港', tideAffinity: 'any', coastFacing: 'W', lat: 26.6520, lon: 127.8730 },
+  { name: '塩川湾', muni: '本部町', areaId: 'north_w', type: '干潟', tideAffinity: 'lowTide', coastFacing: 'W', lat: 26.6700, lon: 127.8650 },
+  { name: '浜崎漁港', muni: '本部町', areaId: 'north_w', type: '漁港', tideAffinity: 'any', coastFacing: 'W', lat: 26.6570, lon: 127.8760 },
+  { name: '屋我地漁港', muni: '名護市', areaId: 'north_w', type: '漁港', tideAffinity: 'any', coastFacing: 'sheltered', lat: 26.6350, lon: 128.0080 },
+  { name: '古宇利漁港', muni: '今帰仁村', areaId: 'north_w', type: '漁港', tideAffinity: 'any', coastFacing: 'N', lat: 26.6980, lon: 128.0220 },
+  { name: 'チグヌ浜', muni: '今帰仁村', areaId: 'north_w', type: '浜', tideAffinity: 'aroundHighLow', coastFacing: 'N', niche: true, timingType: 'manchou_zengo', advice: '満潮時は道路からも釣行可能。内海側はイカ狙いのエギングに好条件', lat: 26.7020, lon: 128.0180 },
+  { name: '運天港周辺', muni: '今帰仁村', areaId: 'north_w', type: '漁港', tideAffinity: 'any', coastFacing: 'sheltered', lat: 26.6850, lon: 127.9700 },
+  { name: '安田漁港', muni: '国頭村', areaId: 'north_e', type: '漁港', tideAffinity: 'any', coastFacing: 'E', lat: 26.7350, lon: 128.2650 },
+  { name: '川田漁港', muni: '東村', areaId: 'north_e', type: '漁港', tideAffinity: 'any', coastFacing: 'E', lat: 26.6300, lon: 128.2150 },
+  { name: '慶佐次漁港', muni: '東村', areaId: 'north_e', type: '漁港', tideAffinity: 'any', coastFacing: 'E', lat: 26.6550, lon: 128.2350 },
+  { name: '宜名真漁港', muni: '国頭村', areaId: 'north_e', type: '漁港', tideAffinity: 'rising', coastFacing: 'N', timingType: 'agejio_asa', advice: '辺戸岬に近く、回遊してくる大物にも期待できる', lat: 26.8250, lon: 128.2450 },
 ];
 
 const FISH_DB = [
@@ -332,6 +337,33 @@ const SAMPLE_CATCHES = [
   { id: 'seed-18', date: '2026-08-23', area: 'naha', place: '志喜屋漁港', fish: 'タマン（ハマフエフキ）', memo: '砂地混じりの堤防で夜のぶっこみが的中' },
   { id: 'seed-19', date: '2026-09-06', area: 'chubu_e', place: '海中道路周辺', fish: 'アイゴ（方言名：エーグヮー）', memo: '堤防のウキ釣りで数尾、刺身は避けて味噌汁に' },
   { id: 'seed-20', date: '2026-09-13', area: 'north_e', place: '安田漁港', fish: 'クロダイ（方言名：チン）', memo: '早朝フカセで良型、引き味最高' },
+  { id: 'seed-21', date: '2025-09-21', area: 'chubu_e', place: '伊計防波堤', fish: 'ガーラ（ロウニンアジ幼魚）', memo: '大潮の夜、置き竿で強烈な引き' },
+  { id: 'seed-22', date: '2025-09-28', area: 'naha', place: '知念漁港', fish: 'タマン（ハマフエフキ）', memo: '夜のぶっこみでヒット' },
+  { id: 'seed-23', date: '2025-10-05', area: 'north_w', place: '名護漁港', fish: 'グルクン（タカサゴ）', memo: '朝サビキで数釣り' },
+  { id: 'seed-24', date: '2025-10-12', area: 'chubu_w', place: '真栄田漁港', fish: 'ミーバイ（ハタ類）', memo: '常夜灯の際釣りで良型' },
+  { id: 'seed-25', date: '2025-10-19', area: 'naha', place: '与那原マリーナ', fish: 'タチウオ', memo: '秋の気配でウキ流し好調' },
+  { id: 'seed-26', date: '2025-10-26', area: 'north_e', place: '慶佐次漁港', fish: 'グルクン（タカサゴ）', memo: '夕方サビキで数尾' },
+  { id: 'seed-27', date: '2025-11-02', area: 'chubu_e', place: '石川漁港', fish: 'タチウオ', memo: '旬の時期に入り夕方から数本' },
+  { id: 'seed-28', date: '2025-11-09', area: 'naha', place: '奥武島漁港', fish: 'オジサン（ヒメジ類）', memo: '干潮の胴突きで数尾' },
+  { id: 'seed-29', date: '2025-11-16', area: 'north_w', place: '古宇利漁港', fish: 'アイゴ（方言名：エーグヮー）', memo: 'ウキ釣りで良型' },
+  { id: 'seed-30', date: '2025-11-23', area: 'naha', place: '三重城漁港', fish: 'クロダイ（方言名：チン）', memo: '堤防際のフカセで本命' },
+  { id: 'seed-31', date: '2025-12-07', area: 'chubu_e', place: '石川漁港', fish: 'タチウオ', memo: '水温低下で連発、この日は5本' },
+  { id: 'seed-32', date: '2025-12-14', area: 'naha', place: '志喜屋漁港', fish: 'タマン（ハマフエフキ）', memo: '夜間、砂地混じりの堤防でぶっこみ的中' },
+  { id: 'seed-33', date: '2025-12-21', area: 'north_e', place: '宜名真漁港', fish: 'タチウオ', memo: '冬の漁港内でウキ流し' },
+  { id: 'seed-34', date: '2025-12-28', area: 'chubu_w', place: '都屋漁港', fish: 'ミーバイ（ハタ類）', memo: '年末、常夜灯まわりで良型' },
+  { id: 'seed-35', date: '2026-01-04', area: 'naha', place: '波の上うみそら公園', fish: 'グルクン（タカサゴ）', memo: '正月明けの堤防先端でサビキ' },
+  { id: 'seed-36', date: '2026-01-11', area: 'chubu_e', place: '伊計防波堤', fish: 'タマン（ハマフエフキ）', memo: '大潮の夜、置き竿でヒット' },
+  { id: 'seed-37', date: '2026-01-18', area: 'north_w', place: '本部新港', fish: 'アイゴ（方言名：エーグヮー）', memo: '朝夕のウキ釣りで複数尾' },
+  { id: 'seed-38', date: '2026-01-25', area: 'naha', place: '知名崎海岸', fish: 'ミーバイ（ハタ類）', memo: '磯の際釣りで良型' },
+  { id: 'seed-39', date: '2026-02-01', area: 'chubu_e', place: '石川漁港', fish: 'タチウオ', memo: '旬の締めくくり、良型3本' },
+  { id: 'seed-40', date: '2026-02-08', area: 'naha', place: '徳仁漁港', fish: 'クロダイ（方言名：チン）', memo: '早朝フカセで本命' },
+  { id: 'seed-41', date: '2026-02-15', area: 'north_e', place: '川田漁港', fish: 'グルクン（タカサゴ）', memo: '朝サビキで数釣り' },
+  { id: 'seed-42', date: '2026-02-22', area: 'chubu_w', place: '西洲防波堤', fish: 'シロギス（キス）', memo: '日中ちょい投げでポツポツ' },
+  { id: 'seed-43', date: '2026-03-01', area: 'naha', place: '馬天港', fish: 'オジサン（ヒメジ類）', memo: '砂地混じりの堤防で数尾' },
+  { id: 'seed-44', date: '2026-03-08', area: 'north_w', place: '塩川湾', fish: 'シロギス（キス）', memo: '干潟でちょい投げ、数釣り' },
+  { id: 'seed-45', date: '2026-03-15', area: 'chubu_e', place: '泡瀬漁港', fish: 'グルクン（タカサゴ）', memo: '朝まずめサビキで好調' },
+  { id: 'seed-46', date: '2026-03-22', area: 'naha', place: '西崎一文字', fish: 'アイゴ（方言名：エーグヮー）', memo: '夕まずめウキ釣りで数尾' },
+  { id: 'seed-47', date: '2026-03-29', area: 'north_e', place: '安田漁港', fish: 'タマン（ハマフエフキ）', memo: '上げ潮の朝まずめで本命' },
 ];
 
 /* ==================== TIDE (simplified harmonic model, approximate) ==================== */
@@ -569,6 +601,19 @@ function hotspotTip(point) {
     '浜': '波打ち際よりやや沖の「カケアガリ」（急に深くなる駆け上がり）を探ると反応が出やすくなります。',
   };
   return map[point.type] || '潮通しの良い場所を中心に、少しずつ探ってみましょう。';
+}
+// OpenStreetMapの無料埋め込みで、釣り場のだいたいの位置を地図表示する（APIキー不要）。
+function mapEmbedHtml(point) {
+  if (point.lat == null || point.lon == null) return '';
+  const dLat = 0.010, dLon = 0.014;
+  const bbox = (point.lon - dLon) + ',' + (point.lat - dLat) + ',' + (point.lon + dLon) + ',' + (point.lat + dLat);
+  const src = 'https://www.openstreetmap.org/export/embed.html?bbox=' + bbox + '&layer=mapnik&marker=' + point.lat + ',' + point.lon;
+  const glink = 'https://www.google.com/maps?q=' + point.lat + ',' + point.lon;
+  return '<div class="map-embed-wrap">' +
+    '<iframe class="map-embed" src="' + src + '" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="' + point.name + 'の地図"></iframe>' +
+    '<a class="map-link" href="' + glink + '" target="_blank" rel="noopener noreferrer">🔗 Googleマップで開く（ルート検索など）</a>' +
+    '<div class="muted" style="margin-top:4px;">※ピンの位置はおおよその目安です。正確な入口・駐車場は現地情報をご確認ください。</div>' +
+    '</div>';
 }
 // スコアを「本日の釣果期待度」という直感的なパーセント表示に変換する（統計的な予測ではなく演出）。
 function scoreToPercent(score) {
@@ -892,12 +937,13 @@ async function fetchAreaData(area) {
   return result;
 }
 async function refreshArea(areaId) {
+  if (state.cache[areaId] && state.cache[areaId].loading) return; // 取得中なら重複フェッチしない
   const area = AREAS.find(function (a) { return a.id === areaId; });
   state.cache[areaId] = { loading: true };
-  renderHome(); renderPoints();
+  refreshCtxViews();
   const data = await fetchAreaData(area);
   state.cache[areaId] = { loading: false, data: data, ts: new Date() };
-  renderHome(); renderPoints();
+  refreshCtxViews();
 }
 
 /* ==================== CATCH LOG (localStorage) ==================== */
@@ -957,14 +1003,15 @@ function buildTideChartSVG(timeline, extrema, now) {
     '<line x1="' + nx + '" y1="0" x2="' + nx + '" y2="' + h + '" stroke="#FF3D81" stroke-dasharray="4,3" stroke-width="1.5"/>' +
     '<circle cx="' + nx + '" cy="' + ny + '" r="5" fill="#FF3D81" stroke="#DCEFF5" stroke-width="1.5" filter="url(#tideGlow)"/></svg>';
 }
-function getCtx() {
+function getCtx(areaId) {
+  areaId = areaId || state.area;
   const now = getTargetDateTime();
   const isLive = isViewingLiveNow();
   const timeline = buildTideTimeline(now);
   const extrema = findExtrema(timeline);
   const tideState = tideStateNow(now, extrema);
   const moonLabel = moonPhaseLabel(moonAgeDays(now));
-  const cache = state.cache[state.area];
+  const cache = state.cache[areaId];
   const data = cache && cache.data ? cache.data : null;
   let wind = null, wave = null, wavePeriod = null, sunrise = null, sunset = null;
   if (data) {
@@ -1047,9 +1094,27 @@ function renderHome() {
       (tsLabel ? '<span class="muted">' + tsLabel + '</span>' : '') + '</div>' +
       chart +
       '<div class="disclaimer">※潮汐は気象庁公開の那覇標準港調和定数を基にした簡易計算の目安です。実測値ではありません。風・波はOpen-Meteoの無料データ、警報注意報・地方海上予報は気象庁の公開データ（定期更新のスナップショット）です。</div>' +
-    '</div>';
+    '</div>' +
+    buildHomePointsPreview(ctx, area);
   const btn = document.getElementById('refreshBtn');
   if (btn) btn.addEventListener('click', function () { refreshArea(state.area); });
+  const more = document.getElementById('homeSeeMoreBtn');
+  if (more) more.addEventListener('click', function () { switchTab('points'); });
+  wireHotspotToggles(el, renderHome);
+}
+// ホーム画面にも「今この時間ならここ」がひと目でわかるよう、上位2件だけプレビュー表示する。
+function buildHomePointsPreview(ctx, area) {
+  const scored = scorePointsForArea(state.area, ctx);
+  const top = scored.slice(0, 2);
+  if (!top.length) return '';
+  const pointsTimeLabel = ctx.isLive ? '今' : (ctx.now.getMonth() + 1) + '/' + ctx.now.getDate() + ' ' + fmt(ctx.now) + '頃';
+  let html = '<div class="card home-points-preview"><h2>🎯 ' + pointsTimeLabel + 'のおすすめポイント（' + area.name + '）</h2>' +
+    '<div class="points-grid">';
+  top.forEach(function (item, idx) { html += buildPointCard(item, idx); });
+  html += '</div>' +
+    '<button class="toggle-all" id="homeSeeMoreBtn" style="margin-top:14px;">🎯 おすすめポイントをもっと見る ▶</button>' +
+    '</div>';
+  return html;
 }
 function fmtJmaFetched(iso) {
   if (!iso) return '不明';
@@ -1058,101 +1123,106 @@ function fmtJmaFetched(iso) {
 }
 
 /* ==================== RENDER: POINTS ==================== */
-function renderPoints() {
-  const el = document.getElementById('tab-points');
-  const area = AREAS.find(function (a) { return a.id === state.area; });
-  const ctx = getCtx();
-  const pts = POINTS.filter(function (p) { return p.areaId === state.area; });
+const MEDALS = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+// おすすめポイント／狙いの魚の全エリア横断表示など、どこでも同じ情報量で使う共通カード。
+function buildPointCard(item, idx) {
+  const p = item.point;
+  let badges = '';
+  if (p.niche) badges += '<span class="badge badge-niche">穴場</span> ';
+  if (item.warning) badges += '<span class="badge badge-warn">⚠️ ' + item.warning + '</span> ';
+  else if (item.score >= 5) badges += '<span class="badge badge-good">🎉本命チャンス！</span> ';
+  if (item.timing.badge) badges += '<span class="badge badge-moon">' + item.timing.badge + '</span> ';
+  const reasonLine = item.reasons.length ? item.reasons.join('・') : (p.tideAffinity === 'any' ? '潮を問わず楽しめる' : '');
+  const pct = scoreToPercent(item.score);
+  const expanded = state.expandedPoints.has(p.name);
+  const pointKey = encodeURIComponent(p.name);
+  return '<div class="point-card">' +
+    '<div class="row"><div><span class="rank">' + (idx != null ? MEDALS[idx] || '' : '') + '</span><span class="name">' + p.name + '</span></div><span class="muni">' + p.muni + '</span></div>' +
+    (badges ? '<div class="tags">' + badges + '</div>' : '') +
+    '<div class="timing">🎣 ' + item.timing.text + '</div>' +
+    '<div class="advice">' + genericAdvice(p) + (reasonLine ? '（' + reasonLine + '）' : '') + '</div>' +
+    '<div class="expect-badge">🎯 釣果期待度 <b>' + pct + '%</b></div>' +
+    '<button class="hotspot-toggle" data-point="' + pointKey + '">' + (expanded ? '🔍 詳細を閉じる ▲' : '🔍 この釣り場のもっと詳しい狙い目＆地図を見る ▼') + '</button>' +
+    (expanded ? '<div class="hotspot-detail">' + hotspotTip(p) + '</div>' + mapEmbedHtml(p) : '') +
+    '</div>';
+}
+// カード内の「もっと詳しく」トグルに開閉イベントを配線する共通ヘルパー。
+function wireHotspotToggles(rootEl, rerender) {
+  rootEl.querySelectorAll('.hotspot-toggle').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const key = decodeURIComponent(btn.getAttribute('data-point'));
+      if (state.expandedPoints.has(key)) state.expandedPoints.delete(key); else state.expandedPoints.add(key);
+      rerender();
+    });
+  });
+}
+function scorePointsForArea(areaId, ctx) {
+  const pts = POINTS.filter(function (p) { return p.areaId === areaId; });
   const scored = pts.map(function (p) {
     const s = scorePoint(p, ctx);
     const timing = resolveTiming(p, ctx);
     return { point: p, score: s.score, reasons: s.reasons, warning: s.warning, timing: timing };
   });
   scored.sort(function (a, b) { return b.score - a.score; });
+  return scored;
+}
+function renderPoints() {
+  const el = document.getElementById('tab-points');
+  const area = AREAS.find(function (a) { return a.id === state.area; });
+  const ctx = getCtx();
+  const scored = scorePointsForArea(state.area, ctx);
   const top = scored.slice(0, 5);
   const rest = scored.slice(5);
-  const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-
-  function cardHtml(item, idx) {
-    const p = item.point;
-    let badges = '';
-    if (p.niche) badges += '<span class="badge badge-niche">穴場</span> ';
-    if (item.warning) badges += '<span class="badge badge-warn">⚠️ ' + item.warning + '</span> ';
-    else if (item.score >= 5) badges += '<span class="badge badge-good">🎉本命チャンス！</span> ';
-    if (item.timing.badge) badges += '<span class="badge badge-moon">' + item.timing.badge + '</span> ';
-    const reasonLine = item.reasons.length ? item.reasons.join('・') : (p.tideAffinity === 'any' ? '潮を問わず楽しめる' : '');
-    const pct = scoreToPercent(item.score);
-    const expanded = state.expandedPoints.has(p.name);
-    const pointKey = encodeURIComponent(p.name);
-    return '<div class="point-card">' +
-      '<div class="row"><div><span class="rank">' + (idx != null ? medals[idx] || '' : '') + '</span><span class="name">' + p.name + '</span></div><span class="muni">' + p.muni + '</span></div>' +
-      (badges ? '<div class="tags">' + badges + '</div>' : '') +
-      '<div class="timing">🎣 ' + item.timing.text + '</div>' +
-      '<div class="advice">' + genericAdvice(p) + (reasonLine ? '（' + reasonLine + '）' : '') + '</div>' +
-      '<div class="expect-badge">🎯 釣果期待度 <b>' + pct + '%</b></div>' +
-      '<button class="hotspot-toggle" data-point="' + pointKey + '">' + (expanded ? '🔍 詳細を閉じる ▲' : '🔍 この釣り場のもっと詳しい狙い目を見る ▼') + '</button>' +
-      (expanded ? '<div class="hotspot-detail">' + hotspotTip(p) + '</div>' : '') +
-      '</div>';
-  }
 
   const pointsTimeLabel = ctx.isLive ? '現在' : (ctx.now.getMonth() + 1) + '/' + ctx.now.getDate() + '(' + ['日','月','火','水','木','金','土'][ctx.now.getDay()] + ') ' + fmt(ctx.now) + '頃';
   let html = '<div class="card"><h2>🎯 ' + area.name + ' のおすすめポイント</h2>' +
     '<div class="muted" style="margin-bottom:14px;"><b style="color:var(--cyan-bright);">' + pointsTimeLabel + '</b> の潮・風・波のスコアから自動算出したおすすめ順です。上の「表示する日時」を変えると、その時間帯のおすすめに切り替わります。</div>' +
     '<div class="points-grid">';
-  top.forEach(function (item, idx) { html += cardHtml(item, idx); });
+  top.forEach(function (item, idx) { html += buildPointCard(item, idx); });
   html += '</div>';
   if (!top.length) html += '<div class="muted">このエリアのポイント情報がありません。</div>';
   html += '</div>';
   if (rest.length) {
     html += '<div class="card" id="restWrap" style="' + (state.showAllPoints ? '' : 'display:none;') + '">' +
       '<h2>他のポイント一覧</h2><div class="points-grid">';
-    rest.forEach(function (item) { html += cardHtml(item, null); });
+    rest.forEach(function (item) { html += buildPointCard(item, null); });
     html += '</div></div>';
     html += '<button class="toggle-all" id="toggleAllBtn">' + (state.showAllPoints ? '一覧を閉じる ▲' : 'このエリアの全ポイントを見る ▼') + '</button>';
   }
   el.innerHTML = html;
   const t = document.getElementById('toggleAllBtn');
   if (t) t.addEventListener('click', function () { state.showAllPoints = !state.showAllPoints; renderPoints(); });
-  el.querySelectorAll('.hotspot-toggle').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      const key = decodeURIComponent(btn.getAttribute('data-point'));
-      if (state.expandedPoints.has(key)) state.expandedPoints.delete(key); else state.expandedPoints.add(key);
-      renderPoints();
-    });
-  });
+  wireHotspotToggles(el, renderPoints);
 }
 
 /* ==================== RENDER: FISH ==================== */
-function tideOnlyScore(point, ctx) {
-  return scorePoint(point, { tideState: ctx.tideState }).score;
-}
+// おすすめポイントと全く同じスコアリング（潮・風・波）で、選んだ魚に合うポイントを全エリアから探す。
+// 未取得のエリアがあればバックグラウンドで自動取得し、届き次第この画面を再描画する。
 function renderFishAreaMatches(fish) {
-  const ctx = getCtx();
   let body = '';
   let any = false;
+  let anyLoading = false;
   AREAS.forEach(function (area) {
     const pts = POINTS.filter(function (p) { return p.areaId === area.id && matchesFish(p, fish.key); });
     if (!pts.length) return;
     any = true;
-    const scored = pts.map(function (p) { return { point: p, score: tideOnlyScore(p, ctx), timing: resolveTiming(p, ctx) }; });
-    scored.sort(function (a, b) { return b.score - a.score; });
-    const top = scored.slice(0, 3);
-    body += '<div class="fish-area-heading">📍 ' + area.name + '</div><div class="points-grid">';
-    top.forEach(function (item) {
-      const p = item.point;
-      body += '<div class="point-card">' +
-        '<div class="row"><span class="name">' + p.name + '</span><span class="muni">' + p.muni + '</span></div>' +
-        (p.niche ? '<div class="tags"><span class="badge badge-niche">穴場</span></div>' : '') +
-        '<div class="timing">🎣 ' + item.timing.text + '</div>' +
-        '<div class="advice">' + genericAdvice(p) + '</div>' +
-        '<div class="expect-badge">🎯 釣果期待度 <b>' + scoreToPercent(item.score) + '%</b></div>' +
-        '</div>';
+    if (!state.cache[area.id]) { refreshArea(area.id); anyLoading = true; }
+    else if (state.cache[area.id].loading) { anyLoading = true; }
+    const ctxForArea = getCtx(area.id);
+    const scoredAll = pts.map(function (p) {
+      const s = scorePoint(p, ctxForArea);
+      return { point: p, score: s.score, reasons: s.reasons, warning: s.warning, timing: resolveTiming(p, ctxForArea) };
     });
+    scoredAll.sort(function (a, b) { return b.score - a.score; });
+    const top = scoredAll.slice(0, 3);
+    const loadingNote = (!state.cache[area.id] || state.cache[area.id].loading) ? '<span class="muted">（風・波を取得中…）</span>' : '';
+    body += '<div class="fish-area-heading">📍 ' + area.name + ' ' + loadingNote + '</div><div class="points-grid">';
+    top.forEach(function (item, idx) { body += buildPointCard(item, idx); });
     body += '</div>';
   });
   if (!any) return '';
-  return '<div class="card"><h2>📍 ' + fish.name + ' が狙えるポイント（全エリア）</h2>' +
-    '<div class="muted" style="margin-bottom:6px;">魚種の特性と現在の潮まわりから相性の良いポイントをエリアごとにピックアップしました。風・波の状況は各エリアのホーム画面で確認してください。</div>' +
+  return '<div class="card" id="fishAreaMatchesCard"><h2>📍 ' + fish.name + ' が狙えるポイント（全エリア）</h2>' +
+    '<div class="muted" style="margin-bottom:6px;">おすすめポイントと同じ潮・風・波のスコアで、魚種に合うポイントをエリアごとにピックアップしました。' + (anyLoading ? '一部エリアは気象データ取得中です。' : '') + '</div>' +
     body + '</div>';
 }
 function renderFish() {
@@ -1193,6 +1263,7 @@ function renderFish() {
   el.querySelectorAll('.term-chip').forEach(function (chip) {
     chip.addEventListener('click', function () { showGlossary(chip.getAttribute('data-term')); });
   });
+  wireHotspotToggles(el, renderFish);
 }
 let glossaryTimer = null;
 function showGlossary(term) {
