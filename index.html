@@ -120,6 +120,10 @@
   .map-link{display:inline-block; margin-top:8px; font-size:12.5px; font-weight:700; color:var(--cyan-bright); text-decoration:none; border:1px solid rgba(34,211,238,0.4); border-radius:8px; padding:6px 12px;}
   .map-link:hover{background:rgba(34,211,238,0.1);}
   .home-points-preview .point-card{margin-bottom:0;}
+  .windy-embed{width:100%; height:380px; border:1px solid var(--sand-dark); border-radius:14px; display:block;}
+  .ext-link{display:block; background:var(--sand); border:1px solid var(--sand-dark); border-radius:10px; padding:12px 14px; margin-bottom:8px; color:var(--cyan-bright); font-weight:700; font-size:14px; text-decoration:none;}
+  .ext-link:hover{border-color:var(--cyan);}
+  .alert-banner .jma-refresh-btn{font-size:12.5px; padding:7px 14px;}
   .fish-area-heading{font-size:15px; color:var(--cyan-bright); font-weight:800; margin:18px 0 10px; display:flex; align-items:center; gap:6px;}
   .fish-area-heading:first-of-type{margin-top:4px;}
   .btn-refresh{border:1px solid var(--cyan); background:rgba(34,211,238,0.1); color:var(--cyan-bright); border-radius:8px; padding:9px 18px; font-size:13.5px; font-weight:700; cursor:pointer; transition:all 0.15s;}
@@ -857,7 +861,7 @@ function todayDateStr() {
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
-const state = { area: 'naha', cache: {}, activeTab: 'home', showAllPoints: false, activeFish: null, jma: null, jmaLoaded: false, expandedPoints: new Set(), planDate: todayDateStr(), planHour: 'now' };
+const state = { area: 'naha', cache: {}, activeTab: 'home', showAllPoints: false, activeFish: null, jma: null, jmaLoaded: false, jmaLoading: false, jmaError: false, expandedPoints: new Set(), planDate: todayDateStr(), planHour: 'now' };
 function getTargetDateTime() {
   const parts = state.planDate.split('-').map(Number);
   const y = parts[0], m = parts[1], d = parts[2];
@@ -883,16 +887,84 @@ function pickHourlyIndex(times, target) {
 }
 
 /* ==================== JMA (気象庁 地方海上予報・警報注意報) ==================== */
-// 同一オリジンの静的スナップショット（jma-data.json）を読み込む。ライブAPIではなく、
-// 定期的に手動更新するファイルなので、常に取得時刻を表示して鮮度を明示する。
+// 気象庁のbosai公開APIはAccess-Control-Allow-Origin: *が付与されており、
+// ブラウザから直接fetchできる（CORS対応確認済み）。よってスナップショットではなく毎回ライブ取得する。
+const JMA_OFFICE = '471000'; // 沖縄気象台
+const JMA_WARNING_CODE_MAP = {
+  '03': ['レベル3大雨警報', 'warning'], '10': ['レベル2大雨注意報', 'advisory'], '12': ['レベル5大雨特別警報', 'special'],
+  '33': ['レベル5大雨特別警報', 'special'], '08': ['レベル3高潮警報', 'warning'], '21': ['レベル2高潮注意報', 'advisory'],
+  '38': ['レベル5高潮特別警報', 'special'], '04': ['洪水警報', 'warning'], '25': ['洪水注意報', 'advisory'],
+  '29': ['土砂災害情報', 'warning'], '02': ['暴風警報', 'warning'], '05': ['暴風雪警報', 'warning'], '06': ['大雪警報', 'warning'],
+  '07': ['波浪警報', 'warning'], '14': ['雷注意報', 'advisory'], '15': ['強風注意報', 'advisory'], '16': ['波浪注意報', 'advisory'],
+  '17': ['大雪注意報', 'advisory'], '18': ['着雪注意報', 'advisory'], '19': ['融雪注意報', 'advisory'], '20': ['濃霧注意報', 'advisory'],
+  '22': ['低温注意報', 'advisory'], '23': ['霜注意報', 'advisory'], '24': ['乾燥注意報', 'advisory'], '26': ['なだれ注意報', 'advisory'],
+  '27': ['その他の注意報', 'advisory'], '32': ['暴風雪特別警報', 'special'], '35': ['大雪特別警報', 'special'], '36': ['暴風特別警報', 'special'],
+  '37': ['波浪特別警報', 'special']
+};
+const JMA_INACTIVE_STATUSES = ['解除', '発表警報・注意報はなし'];
+async function fetchJmaWarnings(office) {
+  const res = await fetch('https://www.jma.go.jp/bosai/warning/data/r8/' + office + '.json', { cache: 'no-store' });
+  if (!res.ok) throw new Error('warning fetch failed: ' + res.status);
+  const entries = await res.json();
+  const latest = {};
+  entries.forEach(function (e) {
+    ((e.warning && e.warning.class10Items) || []).forEach(function (item) {
+      const cur = latest[item.areaCode];
+      if (!cur || new Date(e.reportDatetime) > new Date(cur.reportDatetime)) {
+        latest[item.areaCode] = { reportDatetime: e.reportDatetime, kinds: item.kinds, publishingOffice: e.publishingOffice };
+      }
+    });
+  });
+  const warningsByArea = {};
+  let publishingOffice = null;
+  Object.keys(latest).forEach(function (area) {
+    const info = latest[area];
+    if (info.publishingOffice) publishingOffice = info.publishingOffice;
+    const active = info.kinds.filter(function (k) { return k.code && JMA_INACTIVE_STATUSES.indexOf(k.status) === -1; });
+    warningsByArea[area] = active.map(function (k) {
+      const m = JMA_WARNING_CODE_MAP[k.code] || ['不明', 'advisory'];
+      return { code: k.code, name: m[0], level: m[1], status: k.status, additions: k.additions || [], reportDatetime: info.reportDatetime };
+    });
+  });
+  return { warningsByArea: warningsByArea, publishingOffice: publishingOffice };
+}
+async function fetchJmaMarine(office) {
+  const res = await fetch('https://www.jma.go.jp/bosai/seawarning/data/forecast/' + office + '.json', { cache: 'no-store' });
+  if (!res.ok) throw new Error('marine fetch failed: ' + res.status);
+  const json = await res.json();
+  const marine = {};
+  (json.forecasts || []).forEach(function (period) {
+    const key = period.name === '今日' ? 'today' : (period.name === '明日' ? 'tomorrow' : null);
+    if (!key) return;
+    (period.properties || []).forEach(function (p) {
+      const code = p.area.code;
+      if (!marine[code]) marine[code] = { name: p.area.name };
+      marine[code][key] = {
+        wind: (p.wind || []).join(' '), weather: (p.weather || []).join(' '),
+        wave: (p.wave || []).join(' '), vis: (p.vis || []).join(' ')
+      };
+    });
+  });
+  return { marine: marine, reportDatetime: json.reportDatetime, publishingOffice: json.publishingOffice };
+}
 async function fetchJmaData() {
+  state.jmaLoading = true;
+  state.jmaError = false;
+  renderHome();
   try {
-    const res = await fetch('./jma-data.json', { cache: 'no-store' });
-    if (!res.ok) throw new Error('jma-data.json not found');
-    state.jma = await res.json();
+    const results = await Promise.all([fetchJmaWarnings(JMA_OFFICE), fetchJmaMarine(JMA_OFFICE)]);
+    const w = results[0], m = results[1];
+    state.jma = {
+      fetchedAt: new Date().toISOString(),
+      publishingOffice: m.publishingOffice || w.publishingOffice || '沖縄気象台',
+      reportDatetime: m.reportDatetime,
+      warningsByArea: w.warningsByArea,
+      marine: m.marine
+    };
   } catch (e) {
-    state.jma = null;
+    state.jmaError = true; // 取得失敗時は直前のデータを維持する（初回失敗ならnullのまま）
   }
+  state.jmaLoading = false;
   state.jmaLoaded = true;
   renderHome();
 }
@@ -1048,18 +1120,23 @@ function renderHome() {
   const dOff = dayOffsetFromToday(ctx.now);
   const viewLabel = ctx.isLive ? 'の今' : '（' + (ctx.now.getMonth() + 1) + '/' + ctx.now.getDate() + ' ' + fmt(ctx.now) + ' 時点の予測）';
 
-  // 気象庁 警報注意報（沖縄気象台のスナップショット）— 「現在」を見ている時だけ表示（未来日時の予測には出さない）
+  // 気象庁 警報注意報（ライブ取得）— 「現在」を見ている時だけ表示（未来日時の予測には出さない）
   const jmaMeta = JMA_AREA_META[state.area];
+  const jmaRefreshBtn = '<button class="btn-refresh jma-refresh-btn" ' + (state.jmaLoading ? 'disabled' : '') + '>' + (state.jmaLoading ? '⏳取得中...' : '🔄最新の警報・海上予報を取得') + '</button>';
   let bannerHtml = '';
   if (dOff === 0 && state.jma && state.jma.warningsByArea) {
     const warns = state.jma.warningsByArea[jmaMeta.warnClass10] || [];
     if (warns.length) {
       const names = warns.map(function (w) { return w.name + (w.additions && w.additions.length ? '（' + w.additions.join('・') + '）' : ''); }).join('、');
       const rdt = warns[0].reportDatetime ? new Date(warns[0].reportDatetime) : null;
-      bannerHtml = '<div class="alert-banner"><span class="ab-icon">⚠️</span><div><b>' + names + '</b> 発表中 — ' + area.name +
+      bannerHtml = '<div class="alert-banner"><span class="ab-icon">⚠️</span><div style="flex:1;"><b>' + names + '</b> 発表中 — ' + area.name +
         '<div class="ab-sub">気象庁' + (state.jma.publishingOffice || '沖縄気象台') + (rdt ? ' ' + fmt(rdt) + '発表' : '') +
-        ' ／ このサイトのデータ取得: ' + fmtJmaFetched(state.jma.fetchedAt) + '（最新情報は気象庁サイトでご確認ください）</div></div></div>';
+        ' ／ このサイトのデータ取得: ' + fmtJmaFetched(state.jma.fetchedAt) + '（気象庁の公開APIからライブ取得）</div>' +
+        '<div style="margin-top:8px;">' + jmaRefreshBtn + '</div></div></div>';
     }
+  }
+  if (dOff === 0 && state.jmaError) {
+    bannerHtml += '<div class="muted" style="margin-bottom:14px;">⚠️ 気象庁データの取得に失敗しました（通信状況をご確認の上、更新ボタンで再試行してください）。' + jmaRefreshBtn + '</div>';
   }
 
   // 気象庁 地方海上予報（沖合参考値）— 今日/明日分のみ気象庁データがあるため、それ以外の日は表示しない
@@ -1070,7 +1147,9 @@ function renderHome() {
     if (m && period) {
       jmaCompareHtml = '<div class="jma-compare"><span class="jc-label">🛰️ 気象庁 地方海上予報（沖合・' + (dOff === 0 ? '今日' : '明日') + '／' + m.name + '）</span><br>' +
         '波高: ' + (period.wave || 'ー') + '　／　風: ' + (period.wind || 'ー') +
-        '<div class="muted" style="margin-top:4px;">※沖合の予報区の値です。上の「波の高さ」（Open-Meteo・沿岸推定）とは対象範囲が異なるため、両方を参考にしてください。</div></div>';
+        '<div class="muted" style="margin-top:4px;">※沖合の予報区の値です。上の「波の高さ」（Open-Meteo・沿岸推定）とは対象範囲が異なるため、両方を参考にしてください。</div>' +
+        (bannerHtml ? '' : '<div style="margin-top:8px;">' + jmaRefreshBtn + '</div>') +
+        '</div>';
     }
   } else if (dOff >= 2) {
     jmaCompareHtml = '<div class="muted" style="margin-top:10px;">気象庁 地方海上予報は今日・明日分のみ提供のため、この日は表示されません。</div>';
@@ -1093,14 +1172,38 @@ function renderHome() {
       '<div class="row" style="margin-top:12px;"><span class="badge badge-moon">🌙 ' + (dOff === 0 ? '本日は' : 'この日は') + ctx.moonLabel + '</span>' +
       (tsLabel ? '<span class="muted">' + tsLabel + '</span>' : '') + '</div>' +
       chart +
-      '<div class="disclaimer">※潮汐は気象庁公開の那覇標準港調和定数を基にした簡易計算の目安です。実測値ではありません。風・波はOpen-Meteoの無料データ、警報注意報・地方海上予報は気象庁の公開データ（定期更新のスナップショット）です。</div>' +
+      '<div class="disclaimer">※潮汐は気象庁公開の那覇標準港調和定数を基にした簡易計算の目安です。実測値ではありません。風・波はOpen-Meteoの無料データ、警報注意報・地方海上予報は気象庁の公開APIから直接ライブ取得しています。</div>' +
     '</div>' +
-    buildHomePointsPreview(ctx, area);
+    buildHomePointsPreview(ctx, area) +
+    windyEmbedHtml(area) +
+    externalLinksHtml();
   const btn = document.getElementById('refreshBtn');
   if (btn) btn.addEventListener('click', function () { refreshArea(state.area); });
   const more = document.getElementById('homeSeeMoreBtn');
   if (more) more.addEventListener('click', function () { switchTab('points'); });
+  el.querySelectorAll('.jma-refresh-btn').forEach(function (b) {
+    b.addEventListener('click', function () { fetchJmaData(); });
+  });
   wireHotspotToggles(el, renderHome);
+}
+// Windy.comの公式埋め込みウィジェット（無料・APIキー不要）。風・波・気圧などをレイヤー切り替えで見られる。
+function windyEmbedHtml(area) {
+  const src = 'https://embed.windy.com/embed2.html?lat=' + area.lat + '&lon=' + area.lon +
+    '&detailLat=' + area.lat + '&detailLon=' + area.lon +
+    '&width=650&height=380&zoom=8&level=surface&overlay=waves&menu=&message=true&marker=true' +
+    '&calendar=now&pressure=true&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1';
+  return '<div class="card"><h2>🌐 Windy 波・風マップ（' + area.name + '周辺）</h2>' +
+    '<iframe class="windy-embed" src="' + src + '" frameborder="0" loading="lazy" title="Windy map"></iframe>' +
+    '<div class="muted" style="margin-top:8px;">Windy.comの公式埋め込みウィジェットです。地図右上のレイヤー切り替えで風・波・気圧なども確認できます。</div>' +
+    '</div>';
+}
+// 釣り専門の外部サイトはスクレイピングせず、リンクのみ提供する（利用規約・安定性のリスク回避のため）。
+function externalLinksHtml() {
+  return '<div class="card"><h2>🔗 外部の参考サイト</h2>' +
+    '<div class="muted" style="margin-bottom:10px;">以下は外部の専門サイトです。利用規約に配慮し、このアプリでは自動取得・埋め込みは行わずリンクのみ掲載しています。</div>' +
+    '<a class="ext-link" href="https://www.tsuritenki.jp/" target="_blank" rel="noopener noreferrer">🎣 釣り天気.jp で詳細な釣り指数を見る ↗</a>' +
+    '<a class="ext-link" href="https://tide.chowari.jp/47/" target="_blank" rel="noopener noreferrer">🌊 潮見表（沖縄）で正式な潮汐表を見る ↗</a>' +
+    '</div>';
 }
 // ホーム画面にも「今この時間ならここ」がひと目でわかるよう、上位2件だけプレビュー表示する。
 function buildHomePointsPreview(ctx, area) {
